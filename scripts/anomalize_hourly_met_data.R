@@ -68,6 +68,23 @@ summary(met)
 # hrly_var_graph(data=met,  var_name = "rh")
 
 
+# create flags for missing data and missing records ------------------------
+
+
+# missing data flags for each met variable for records that are in the raw data.
+#   will join back in with other data later on
+met_data_miss_flags <- met %>% 
+  mutate(airt_miss = ifelse(is.na(airt), TRUE, FALSE),
+         maxair_miss = ifelse(is.na(maxair), TRUE, FALSE),
+         minair_miss = ifelse(is.na(minair), TRUE, FALSE),
+         ppt_miss = ifelse(is.na(ppt), TRUE, FALSE),
+         rh_miss = ifelse(is.na(rh), TRUE, FALSE),
+         sol_miss = ifelse(is.na(sol), TRUE, FALSE),
+         minsol_miss = ifelse(is.na(minsol), TRUE, FALSE),
+         maxsol_miss = ifelse(is.na(maxsol), TRUE, FALSE)) %>% 
+  select(sta, dt, airt_miss:maxsol_miss)
+
+
 # subsetting data for each station
 m40 <- subset_stations(met, "40")
 m42 <- subset_stations(met, "42")
@@ -167,6 +184,22 @@ show_anomalies_stats(minsol_an)
 show_anomalies_stats(maxsol_an)
 
 
+# join data missing flags with m_all_gf before writing to file ------------
+m_all_gf_flags <- m_all_gf %>% 
+  left_join(met_data_miss_flags)
+
+# NOTE: The data missing flags (e.g. - airt_miss) are TRUE if the value
+# was missing in the raw data, FALSE if present in the raw data, and
+# NA if the record didn't exist in the raw data and was added.
+#
+# Both TRUE and NA data missing flags will be gap filled. There will not
+# be missing values, except for the solar variables for station 49 because
+# that station has never had solar sensors.
+
+
+
+# summary(m_all_gf_flags)
+
 
 
 # write out files ----------------------------------------------------
@@ -178,7 +211,8 @@ show_anomalies_stats(maxsol_an)
 # data summaries
 
 
-write_csv(m_all_gf, paste0(files_out_path, "met_hourly_gap_filled.csv"))
+
+write_csv(m_all_gf_flags, paste0(files_out_path, "met_hourly_gap_filled.csv"))
 
 
 
