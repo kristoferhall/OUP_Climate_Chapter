@@ -1,0 +1,69 @@
+---
+title: "Test Hourly Gap Filling"
+author: "KM Hall"
+date: "6/5/2022"
+output: html_document
+---
+
+
+The purpose of this R Markdown notebook is to examine the flags created for the met_hourly_gap_filled.csv file produced in the anomalize_hourly_met_data.R program. There were two types of flags: 1. flags when a variable's hourly data was missing in the raw data, but the hourly record is present in the data; 2. there was no hourly record in the raw data. 
+
+In the second case, missing hourly records were produced and a no_record_flag was set to TRUE. Data was then produced for the record using a simple gap filling method that looked at a station's mean for each variable on the given julian day and hour of the missing data. 
+
+
+
+----  
+
+```{r, message=FALSE, warning=FALSE}
+library(lubridate)
+library(tidyverse)
+library(kableExtra)
+
+met <- read_csv("../data/processed_data/met_hourly_gap_filled.csv") %>% 
+  mutate(sta = as.factor(sta))
+
+```
+
+```{r}
+rec_ct <- met %>% 
+  group_by(sta) %>% 
+  summarize(n_records = n()) %>% 
+  ungroup()
+```
+
+----  
+
+A no_record_flag of TRUE means that there was not a record in the raw data. There will not be any NAs for the no_record_flag.  
+
+```{r, message=FALSE}
+met %>% 
+  group_by(sta, no_record_flag) %>% 
+  summarize(flag_count = n()) %>% 
+  left_join(rec_ct) %>% 
+  mutate(flag_percent = flag_count / n_records * 100) %>% 
+  select(-n_records) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+----  
+
+Flags showing how many records are missing for a particular variable in the raw data. TRUE means the data is missing in the raw data, but there is a record present. NA means that the record was not present in the raw data.  
+
+```{r, message=FALSE}
+met %>% 
+  pivot_longer(airt_miss:maxsol_miss, names_to = "flag", values_to = "flag_value") %>% 
+  group_by(sta, flag, flag_value) %>% 
+  summarize(flag_count = n()) %>% 
+  left_join(rec_ct) %>% 
+  mutate(flag_percent = flag_count / n_records * 100) %>% 
+  select(-n_records) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+
+
+
