@@ -1,14 +1,14 @@
 ---
-title: "Test Hourly Gap Filling"
+title: "Test Hourly Gap-Filling"
 author: "KM Hall"
 date: "6/5/2022"
 output: html_document
 ---
 
 
-The purpose of this R Markdown notebook is to examine the flags created for the met_hourly_gap_filled.csv file produced in the anomalize_hourly_met_data.R program. There were two types of flags: 1. flags when a variable's hourly data was missing in the raw data, but the hourly record is present in the data; 2. there was no hourly record in the raw data. 
+The purpose of this R Markdown notebook is to examine the flags created for the met_hourly_gap_filled.csv file produced in the anomalize_hourly_met_data.R program. There were two types of flags: 1. flags when a variable's hourly data was missing in the raw data, but the hourly record is present in the data; and 2. there was no hourly record in the raw data. 
 
-In the second case, missing hourly records were produced and a no_record_flag was set to TRUE. Data was then produced for the record using a simple gap filling method that looked at a station's mean for each variable on the given julian day and hour of the missing data. 
+In the second case, missing hourly records were produced and a no_record_flag was set to TRUE. Except for precipitation (ppt), data was then produced for the record using a simple gap-filling method that looked at a station's mean for each variable on the given julian day and hour of the missing data. Missing ppt data was gap-filled with a value of 0.
 
 
 
@@ -47,6 +47,9 @@ met %>%
 ```
 
 
+
+
+
 ----  
 
 Flags showing how many records are missing for a particular variable in the raw data. TRUE means the data is missing in the raw data, but there is a record present. NA means that the record was not present in the raw data.  
@@ -63,7 +66,137 @@ met %>%
   kable_styling(full_width = FALSE, position = "left")
 ```
 
+----   
+
+Test the annual differences in select met variables when not gap-filled versus when gap-filled.  
+
+```{r}
+
+met_flag_diffs <- met %>% 
+  mutate(year = year(dt)) %>% 
+  group_by(sta, year) %>% 
+  summarize(airt_ngf = mean(airt[airt_miss == FALSE], na.rm = TRUE),
+            airt_gf = mean(airt),
+            airt_diff = airt_ngf - airt_gf,
+            minair_ngf = mean(minair[minair_miss == FALSE], na.rm = TRUE),
+            minair_gf = mean(minair),
+            minair_diff = minair_ngf - minair_gf,
+            maxair_ngf = mean(maxair[maxair_miss == FALSE], na.rm = TRUE),
+            maxair_gf = mean(maxair),
+            maxair_diff = maxair_ngf - maxair_gf,
+            rh_ngf = mean(rh[rh_miss == FALSE], na.rm = TRUE),
+            rh_gf = mean(rh),
+            rh_diff = rh_ngf - rh_gf,
+            ppt_ngf = sum(ppt[ppt_miss == FALSE], na.rm = TRUE),
+            ppt_gf = sum(ppt),
+            ppt_diff = ppt_ngf - ppt_gf,)
 
 
+```  
+
+----  
+
+airt gap-fill testing:  
+
+```{r}
+ggplot(met_flag_diffs, aes(x = year, y = airt_diff, color=sta)) +
+  geom_line() +
+  facet_wrap(~sta) +
+  ggtitle("Mean hourly airt difference between non gap-filled\nand gap-filled data")
 
 
+met_flag_diffs %>% 
+  select(sta, year, airt_ngf, airt_gf) %>% 
+  pivot_longer(airt_ngf:airt_gf, names_to = 'gap_fill_status', values_to = 'value') %>% 
+  ggplot(aes(x = year, y = value, color = gap_fill_status)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~ sta) +
+  labs(title = "airt gap-filling")
+
+```
+
+
+----  
+
+minair gap-fill testing:  
+
+```{r}
+ggplot(met_flag_diffs, aes(x = year, y = minair_diff, color=sta)) +
+  geom_line() +
+  facet_wrap(~sta) +
+  ggtitle("Mean hourly minair difference between non gap-filled\nand gap-filled data")
+
+met_flag_diffs %>% 
+  select(sta, year, minair_ngf, minair_gf) %>% 
+  pivot_longer(minair_ngf:minair_gf, names_to = 'gap_fill_status', values_to = 'value') %>% 
+  ggplot(aes(x = year, y = value, color = gap_fill_status)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~ sta) +
+  labs(title = "minair gap-filling")
+
+```
+
+The low values seen at the beginning of the time-series for station 42 is because minair was not calculated in the raw data. This artificially makes the gap-filling look bad. minair could be approximately calculated from hourly airt data for the early time period where it is missing in the raw data.  
+
+----  
+maxair gap-fill testing:  
+
+```{r}
+ggplot(met_flag_diffs, aes(x = year, y = maxair_diff, color=sta)) +
+  geom_line() +
+  facet_wrap(~sta) +
+  ggtitle("Mean hourly maxair difference between non gap-filled\nand gap-filled data")
+
+met_flag_diffs %>% 
+  select(sta, year, maxair_ngf, maxair_gf) %>% 
+  pivot_longer(maxair_ngf:maxair_gf, names_to = 'gap_fill_status', values_to = 'value') %>% 
+  ggplot(aes(x = year, y = value, color = gap_fill_status)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~ sta) +
+  labs(title = "maxair gap-filling")
+
+```
+
+The low values seen at the beginning of the time-series for station 42 is because maxair was not calculated in the raw data. This artificially makes the gap-filling look bad. maxair could be approximately calculated from hourly airt data for the early time period where it is missing in the raw data.  
+
+----  
+
+rh gap-fill testing:  
+
+```{r}
+ggplot(met_flag_diffs, aes(x = year, y = rh_diff, color=sta)) +
+  geom_line() +
+  facet_wrap(~sta) +
+  ggtitle("Mean hourly relative humidity difference between non gap-filled\nand gap-filled data")
+
+met_flag_diffs %>% 
+  select(sta, year, rh_ngf, rh_gf) %>% 
+  pivot_longer(rh_ngf:rh_gf, names_to = 'gap_fill_status', values_to = 'value') %>% 
+  ggplot(aes(x = year, y = value, color = gap_fill_status)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~ sta) +
+  labs(title = "rh gap-filling")
+
+```
+
+----  
+
+ppt gap-fill testing:  
+
+```{r}
+ggplot(met_flag_diffs, aes(x = year, y = ppt_diff, color=sta)) +
+  geom_line() +
+  facet_wrap(~sta) +
+  ggtitle("Mean hourly ppt difference between non gap-filled\nand gap-filled data")
+
+met_flag_diffs %>% 
+  select(sta, year, ppt_ngf, ppt_gf) %>% 
+  pivot_longer(ppt_ngf:ppt_gf, names_to = 'gap_fill_status', values_to = 'value') %>% 
+  ggplot(aes(x = year, y = value, color = gap_fill_status)) +
+  geom_line(alpha = 0.7) +
+  facet_wrap(~ sta) +
+  labs(title = "ppt gap-filling")
+
+```
+
+Gap-filling precipitation with a value of 0 does not change  total precipitation when gap-filled.

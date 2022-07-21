@@ -119,7 +119,7 @@ var_hrly_means <- function(data) {
     summarize(airt_mean = mean(airt, na.rm = TRUE),
               maxair_mean = mean(maxair, na.rm = TRUE),
               minair_mean = mean(minair, na.rm = TRUE),
-              ppt_mean = mean(ppt, na.rm = TRUE),
+              ppt_mean = 0,     # just assume a missed hour has 0 ppt
               rh_mean = mean(rh, na.rm = TRUE),
               sol_mean = mean(sol, na.rm = TRUE),
               minsol_mean = mean(minsol, na.rm = TRUE),
