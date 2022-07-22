@@ -16,4 +16,5 @@ These steps need to occur in order:
 
 Other steps that do not have an associated order of operations:
 - ./scripts/met_basic_analysis.R and ./Rmd/met_basic_analysis.Rmd produce some basic graphs of the met data at various time scales without using any specialized time series R packages.  
-- 
+- ./scripts/met_tidyquant.R - using the tidyquant R package to look at met data.
+- ./scripts/met_waveletcomp.R - using WaveletComp R package to look at met data.
