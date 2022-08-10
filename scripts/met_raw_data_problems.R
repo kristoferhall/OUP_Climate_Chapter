@@ -239,7 +239,7 @@ by_month_all_sta(mmr, maxair, "Monthly Maximum Air Temperature (C)")
 # - 49 in 2003-01 - value > 40
 # - 50 in 2003-02 - value < 10
 # - 49 in 2000-07 - value > 44
-# - 32 in 2004-10 - value < 15 (but this may be ok...because it matched general pattern but colder in mountains)
+# - 42 in 2004-10 - value < 15 (but this may be ok...because it matched general pattern but colder in mountains)
 
 
 
@@ -303,6 +303,305 @@ mhr %>%
   # That lends support to the flaky sensor idea. Could filter sta 50 so that any variable less than 
   # the minimum of the other stations is made NA as a solution to the problem. It looks like 50 was 
   # still collecting decent data for many of the hourly records during the time period.
+
+
+
+
+
+
+
+# station 50 airt and minair in 2020-09 and 2020-10:
+
+# daily
+mdr %>% 
+  filter(month(date) %in% c('9', '10') & year(date) == '2020' & sta == '50') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# -40s for minair(filter in met processing program cuts off at -40) don't make sense in Sept. and Oct., 
+# but the patterns generally match airt
+#
+# It seems a little hard to believe that mean airt is < 0 for several days in Sept. and Oct. 
+# 
+# These comments are the same as for 2012 because it looks as though it is going to be a similar issue
+
+# hourly
+mhr %>% 
+  filter(month(date) %in% c('9', '10') & year(date) == '2020' & sta == '50') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  # geom_point(color = 'red', size = 0.2) +
+  facet_wrap(~ name, ncol = 1)
+
+# Yeah, so given the pattern of the hourly graph for the temp vars, I suspect the temp sensor
+# must have been flaky here too.
+#
+# For the issues in Sept. 2020, it is a bit suspect that the sensor data is wobbling down and back
+# up when the initial -40(s) occur. 
+#
+# For the issues in Oct. 2020, it seems as though the sensor is again flaky and the data is really
+# down and up around the -40 minair issues. Plus, maxair has some missing data in here for whatever reason.
+#
+# This makes me wonder whether any of this temp data in Sept.-Oct. 2020 is reliable.
+
+# looking at hourly during this time for all stations
+mhr %>% 
+  filter(month(date) %in% c('9', '10') & year(date) == '2020') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_grid(name ~ sta)
+
+# Actually, overall, 50's data looks similar to the other stations. There must have been some really
+# early cold snaps in 2020. Still, the -40 values are in error and will need to be removed.
+
+
+
+
+
+
+# station 49 in 01-2003 - has a -40 value for minair: 
+
+# daily
+mdr %>% 
+  filter(month(date) == '1' & year(date) == '2003' & sta == '49') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# There is also a +40 maxair the start of the month along with the -40 minair
+
+# quick look including December 2002 to see what happens from the end of December to start of January.
+mdr %>% 
+  filter(((month(date) == '1' & year(date) == '2003') | (month(date) == '12' & year(date) == '2002')) & sta == '49') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# Ok, so these bad values are probably because the sensor was offline for the last several days of December 2002,
+# and then came back online with bad values before it started working correctly again.
+
+# look at hourly data during time
+mhr %>% 
+  filter(((month(date) == '1' & year(date) == '2003') | (month(date) == '12' & year(date) == '2002')) & sta == '49') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  # geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# Yes, the data were just briefly screwy before the sensor started working properly again. Should probably 
+# delete the first day or two in January 2003 and gap fill it.
+
+
+
+
+
+
+# Station 42 in 05-2017 - has a -40 minair value
+
+# daily
+mdr %>% 
+  filter(month(date) == '5' & year(date) == '2017' & sta == '42') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# This looks very similar to the issue immediately above for station 43 in Jan. 2003. Going to follow 
+# the same approach to investigate further. 
+
+mdr %>% 
+  filter(((month(date) == '5' & year(date) == '2017') | (month(date) == '4' & year(date) == '2017')) & sta == '42') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# There is not missing data in this case that is apparent from daily data. Need to look at the hourly data.  
+
+mhr %>% 
+  filter(((month(date) == '5' & year(date) == '2017') | (month(date) == '4' & year(date) == '2017')) & sta == '42') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  # geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# In this case, it looks like there is just a glitch with the minair -40 value. Should be removed and gap filled.
+
+
+
+
+
+
+# Station 50 in 2003-02 has maxair < 10:
+
+# daily
+mdr %>% 
+  filter(month(date) == '2' & year(date) == '2003' & sta == '50') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# looking at hourly during this time for all stations
+mhr %>% 
+  filter(month(date) == '2' & year(date) == '2003') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_grid(name ~ sta)
+
+# This looks fine.
+
+
+
+
+
+# Station 49 in 2000-07 has maxair > 44:
+
+# daily
+mdr %>% 
+  filter(month(date) == '7' & year(date) == '2000' & sta == '49') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# Need to look at hourly to get a better sense of whether these are an issue or not
+
+mhr %>% 
+  filter(month(date) == '7' & year(date) == '2000' & sta == '49') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_wrap(~ name, ncol = 1)
+
+# looking at hourly during this time for all stations
+mhr %>% 
+  filter(month(date) == '7' & year(date) == '2000') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_grid(name ~ sta)
+
+# These values look maybe a little high, but there isn't enough evidence to say they are bad data points.
+# It looks like there were just a few hot days. It was July, afterall. Do not make any corrections to data.
+
+
+
+
+
+
+
+# Station 42 in 2004-10 has maxair < 15:
+
+# daily
+mdr %>% 
+  filter(month(date) == '10' & year(date) == '2004' & sta == '42') %>% 
+  select(sta:maxair) %>% 
+  pivot_longer(airt:maxair) %>% 
+  ggplot(aes(x = date, y = value, color = name)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
+
+# Need to look at hourly data for Sept. and Oct. and Nov. 2004. 
+mhr %>% 
+  filter((month(date) %in% c('9', '10', '11') & year(date) == '2004')  & sta == '42') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_wrap(~ name, ncol = 1)
+
+# The sensor went offline in early October and didn't come back online until early November. Do not
+# make any changes to the data.
+
+
+
+# Station 42 1997-07 - checking ppt:
+
+mdr %>% 
+  filter(month(date) == '7' & year(date) == '1997' & sta == '42') %>% 
+  select(sta, date, ppt) %>% 
+  ggplot(aes(x = date, y = ppt)) +
+  geom_line() +
+  geom_point(color = 'red') 
+
+# Should look at August too. And include other stations
+mdr %>% 
+  filter(month(date) %in% c('7', '8') & year(date) == '1997') %>% 
+  select(sta, date, ppt) %>% 
+  ggplot(aes(x = date, y = ppt, color=sta)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ sta, ncol=1)
+
+# There was a corresponding large rain even at 40. It looks fine.
+
+
+
+
+
+# Station 42 1998-07 - checking ppt:
+
+mdr %>% 
+  filter(month(date) == '7' & year(date) == '1998' & sta == '42') %>% 
+  select(sta, date, ppt) %>% 
+  ggplot(aes(x = date, y = ppt)) +
+  geom_line() +
+  geom_point(color = 'red') 
+
+
+# Should look at June too. And include other stations
+mdr %>% 
+  filter(month(date) %in% c('6' ,'7') & year(date) == '1997') %>% 
+  select(sta, date, ppt) %>% 
+  ggplot(aes(x = date, y = ppt, color=sta)) +
+  geom_line() +
+  geom_point(color = 'red') +
+  facet_wrap(~ sta, ncol=1)
+
+# There was a corresponding large rain even at 40.  It looks fine.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
