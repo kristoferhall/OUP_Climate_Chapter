@@ -601,10 +601,6 @@ mdr %>%
 
 
 
-View(mhr %>% filter(minair < -35))
-
-
-
 
 
 
