@@ -42,7 +42,26 @@ met <- read_csv(file_input) %>%
          minsol = Min_Solar_Radiation,
          maxsol = Max_Solar_Radiation)
 
-# create a long version of the data
+
+
+# convert some bad data values to NAs ---------------------------------------------------
+
+# NOTE: see met_raw_data_problems.R for more info on how these data were identified
+
+met <- met %>% 
+  mutate(airt = ifelse((sta == "50" & date >= "2012-09-01" & date < "2012-10-24" & airt < 0) | (sta == "49" & date == "2003-01-01") |
+                         (sta == "40" & date > "2000-12-18" & date < "2001-01-05" & airt < -13), NA, airt),
+         maxair = ifelse((sta == "50" & date >= "2012-09-01" & date < "2012-10-24" & maxair < 0) | (sta == "49" & date == "2003-01-01"), NA, maxair),
+         minair = ifelse((sta == "50" & date >= "2012-09-01" & date < "2012-10-24" & minair < 0) | (sta == "49" & date == "2003-01-01") |
+                           (sta == "50" & month(date) %in% c("9", "10") & year(date) == "2020" & minair < -10) |
+                           (sta == "42" & month(date) == "5" & year(date) == "2017" & minair < -10), NA, minair))
+
+
+
+
+
+
+# create a long version of the data -------------------------------------------------------
 met_l <- met %>% 
   pivot_longer(airt:maxsol, names_to = "variable", values_to = "value")
 
@@ -66,6 +85,9 @@ summary(met)
 # hrly_var_graph(data=met,  var_name = "maxsol")
 # hrly_var_graph(data=met,  var_name = "ppt")
 # hrly_var_graph(data=met,  var_name = "rh")
+
+
+
 
 
 # create flags for missing data and missing records ------------------------
@@ -147,44 +169,47 @@ m_all_gf_l <- m_all_gf %>%
 
 # anomalize the data for each variable -----------------------------------------
 
-airt_an <- var_anomolize(m_all_gf, "airt")
-maxair_an <- var_anomolize(m_all_gf, "maxair")
-minair_an <- var_anomolize(m_all_gf, "minair")
-ppt_an <- var_anomolize(m_all_gf, "ppt")
-rh_an <- var_anomolize(m_all_gf, "rh")
-sol_an <- m_all_gf %>% 
-  filter(sta != "49") %>% 
-  var_anomolize(., "sol")
-maxsol_an <- m_all_gf %>% 
-  filter(sta != "49") %>% 
-  var_anomolize(., "maxsol")
-minsol_an <- m_all_gf %>% 
-  filter(sta != "49") %>% 
-  var_anomolize(., "minsol")
+# airt_an <- var_anomolize(m_all_gf, "airt")
+# maxair_an <- var_anomolize(m_all_gf, "maxair")
+# minair_an <- var_anomolize(m_all_gf, "minair")
+# ppt_an <- var_anomolize(m_all_gf, "ppt")
+# rh_an <- var_anomolize(m_all_gf, "rh")
+# sol_an <- m_all_gf %>% 
+#   filter(sta != "49") %>% 
+#   var_anomolize(., "sol")
+# maxsol_an <- m_all_gf %>% 
+#   filter(sta != "49") %>% 
+#   var_anomolize(., "maxsol")
+# minsol_an <- m_all_gf %>% 
+#   filter(sta != "49") %>% 
+#   var_anomolize(., "minsol")
+# 
+# 
+# 
+# show_anomalies_graph(airt_an)
+# show_anomalies_graph(minair_an)
+# show_anomalies_graph(maxair_an)
+# show_anomalies_graph(ppt_an)
+# show_anomalies_graph(rh_an)
+# show_anomalies_graph(sol_an)
+# show_anomalies_graph(minsol_an)
+# show_anomalies_graph(maxsol_an)
+# 
+# 
+# show_anomalies_stats(airt_an)
+# show_anomalies_stats(minair_an)
+# show_anomalies_stats(maxair_an)
+# show_anomalies_stats(ppt_an)
+# show_anomalies_stats(rh_an)
+# show_anomalies_stats(sol_an)
+# show_anomalies_stats(minsol_an)
+# show_anomalies_stats(maxsol_an)
+
+# NOTE: decided not to use Anomalize package
 
 
 
-show_anomalies_graph(airt_an)
-show_anomalies_graph(minair_an)
-show_anomalies_graph(maxair_an)
-show_anomalies_graph(ppt_an)
-show_anomalies_graph(rh_an)
-show_anomalies_graph(sol_an)
-show_anomalies_graph(minsol_an)
-show_anomalies_graph(maxsol_an)
-
-
-show_anomalies_stats(airt_an)
-show_anomalies_stats(minair_an)
-show_anomalies_stats(maxair_an)
-show_anomalies_stats(ppt_an)
-show_anomalies_stats(rh_an)
-show_anomalies_stats(sol_an)
-show_anomalies_stats(minsol_an)
-show_anomalies_stats(maxsol_an)
-
-
-# join data missing flags with m_all_gf before writing to file ------------
+# join data missing flags with m_all_gf before writing to file -------------------------------
 m_all_gf_flags <- m_all_gf %>% 
   left_join(met_data_miss_flags)
 
@@ -198,7 +223,7 @@ m_all_gf_flags <- m_all_gf %>%
 
 
 
-# summary(m_all_gf_flags)
+summary(m_all_gf_flags)
 
 
 

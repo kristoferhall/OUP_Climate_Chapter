@@ -47,9 +47,9 @@ summary(mhr)
 
 
 # hourly temps grouped by month of year ----------------------------------
-ggplot(mhr, aes(x = dt, y = airt, color = sta)) +
-  geom_point() +
-  facet_grid(month(dt) ~ sta)
+# ggplot(mhr, aes(x = dt, y = airt, color = sta)) +
+#   geom_point() +
+#   facet_grid(month(dt) ~ sta)
 
 # My initial impression, just doing this one graph, is that you first
 # need to start at at least a daily, if not monthly, scale to identify
@@ -582,7 +582,22 @@ mdr %>%
 # There was a corresponding large rain even at 40. It looks fine.
 
 
+# Station 40 2000-12-20 to 2001-01-05 - airt issue:
 
+met %>% 
+  filter(sta == "40" & date >= "2000-12-15" & date <= "2001-01-10") %>% 
+  ggplot(aes(x=dt, y=airt)) +
+  geom_line() +
+  geom_point(size=0.2, color='red') 
+
+met %>% 
+  filter(date >= "2000-12-20" & date <= "2001-01-10") %>% 
+  ggplot(aes(x=dt, y=airt)) +
+  geom_line() +
+  geom_point(size=0.2, color='red') +
+  facet_wrap(~ sta)
+
+# There are problems with the data. Delete airt < -13 or so.
 
 
 # Station 42 1998-07 - checking ppt:
