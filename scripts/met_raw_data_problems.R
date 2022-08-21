@@ -280,7 +280,7 @@ mdr %>%
 
 # hourly
 mhr %>% 
-  filter(month(date) %in% c('9', '10') & year(date) == '2012' & sta == '50') %>% 
+  filter(month(date) %in% c('9', '10','11') & year(date) == '2012' & sta == '50') %>% 
   select(sta:minair) %>% 
   pivot_longer(airt:minair) %>% 
   ggplot(aes(x = dt, y = value, color = name)) +
@@ -305,7 +305,14 @@ mhr %>%
   # still collecting decent data for many of the hourly records during the time period.
 
 
-
+mhr %>% 
+  filter(date >= "2012-10-01" & date < "2012-10-24") %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  facet_grid(name ~ sta) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
 
 
 
@@ -336,7 +343,7 @@ mhr %>%
   pivot_longer(airt:minair) %>% 
   ggplot(aes(x = dt, y = value, color = name)) +
   geom_line() +
-  # geom_point(color = 'red', size = 0.2) +
+  geom_point(color = 'red', size = 0.2) +
   facet_wrap(~ name, ncol = 1)
 
 # Yeah, so given the pattern of the hourly graph for the temp vars, I suspect the temp sensor
@@ -408,7 +415,14 @@ mhr %>%
 # delete the first day or two in January 2003 and gap fill it.
 
 
-
+mhr %>% 
+  filter(date >= '2003-01-01' & date < '2003-01-05' & sta == '49') %>% 
+  select(sta:minair) %>% 
+  pivot_longer(airt:minair) %>% 
+  ggplot(aes(x = dt, y = value, color = name)) +
+  geom_line() +
+  # geom_point(color = 'red') +
+  facet_wrap(~ name, ncol = 1)
 
 
 
@@ -424,7 +438,7 @@ mdr %>%
   geom_point(color = 'red') +
   facet_wrap(~ name, ncol = 1)
 
-# This looks very similar to the issue immediately above for station 43 in Jan. 2003. Going to follow 
+# This looks very similar to the issue immediately above for station 42 in Jan. 2003. Going to follow 
 # the same approach to investigate further. 
 
 mdr %>% 

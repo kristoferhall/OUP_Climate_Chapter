@@ -75,7 +75,7 @@ ggplot(y, aes(x = year, y = minair, color = sta)) +
 y %>% 
   ggplot(aes(x = sta, y = minair, color = sta)) +
   geom_boxplot() +
-  labs(title = "Minimul Annual Air Temperature by Station",
+  labs(title = "Minimum Annual Air Temperature by Station",
        x = "Station",
        y = "Minimum Air Temp (C) ") +
   theme(legend.position="none")

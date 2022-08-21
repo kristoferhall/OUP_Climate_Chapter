@@ -71,7 +71,7 @@ ppt_m_na <- ppt_na %>%
   summarize(na_per_month = sum(is.na(ppt)))
 
 ggplot(ppt_m_na, aes(x=month_date, y=na_per_month, color=sta)) +
-  geom_point(alpha = 0.6) +
+  geom_line(alpha = 0.6) +
   facet_wrap(~ sta)
 
 # Most of the NAs are are for sta 40 prior to 1990 and for 42 prior to 1993. These are early on
@@ -158,6 +158,75 @@ ppt_pre_post %>%
 
 
 
+# looking at the data problems early on for 40 and 42 ------------------  
+
+early <- mhr %>% 
+  filter(sta %in% c("40", "42") & year(dt) < '1993') %>% 
+  select(sta, dt, ppt)
+  
+View(early %>% 
+  filter(!is.na(ppt)))
+
+early %>% 
+  filter(!is.na(ppt)) %>% 
+  ggplot(aes(x=dt, y=ppt)) +
+  geom_point(size=0.4) +
+  facet_wrap(~sta)
+
+early %>% 
+  mutate(ppt_miss = ifelse(is.na(ppt), TRUE, FALSE)) %>% 
+  ggplot(aes(x=dt, y=ppt_miss, color=ppt_miss)) +
+  geom_point(size=0.4, alpha=0.5) +
+  facet_wrap(~sta)
+
+# see how gap filling with 0 affects results
+early_month <- early %>% 
+  mutate(ppt_gf = ifelse(is.na(ppt), 0, ppt),
+         year = year(dt),
+         month = month(dt)) %>% 
+  group_by(sta, year, month) %>% 
+  summarize(ppt_no_gf = sum(ppt, na.rm = TRUE),
+            ppt_0_gf = sum(ppt_gf, na.rm = TRUE),
+            diff = ppt_no_gf - ppt_0_gf,
+            n_miss = sum(is.na(ppt), na.rm = TRUE))
+
+# zero filling does not affect ppt early on for 40 and 42. 
+
+
+
+# looking at how 0 gf affects ppt more broadly -----------------------
+
+ppt_h <- mhr %>% 
+  select(sta, dt, ppt) %>% 
+  mutate(ppt_gf = ifelse(is.na(ppt), 0, ppt))
+
+ppt_m <- ppt_h %>% 
+  mutate(year = year(dt),
+         month = month(dt)) %>% 
+  group_by(sta, year, month) %>% 
+  summarize(ppt_no_gf = sum(ppt, na.rm = TRUE),
+            ppt_0_gf = sum(ppt_gf, na.rm = TRUE),
+            diff = ppt_no_gf - ppt_0_gf,
+            n_miss = sum(is.na(ppt), na.rm = TRUE)) %>% 
+  mutate(date = paste0(year, "-", month, "-01"))
+
+
+ppt_m %>% filter(diff > 0)
+
+# 0 gap fill has no affect on ppt
+
+ppt_m %>% 
+  group_by(sta, year) %>% 
+  summarize(ppt = sum(ppt_0_gf)) %>% 
+  ggplot(aes(x = year, y = ppt, color = sta)) +
+  geom_line() +
+  facet_wrap(~ sta)
+
+
+
+
+# Final impressions: 0 gap filling is appropriate and has negligible effect
+# on ppt
 
 
 
