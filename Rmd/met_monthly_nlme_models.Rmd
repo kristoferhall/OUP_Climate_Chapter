@@ -1,0 +1,303 @@
+---
+title: "SEV Met Monthly nlme Models"
+author: "KM Hall"
+date: "2022-08-30"
+output: html_document
+---
+
+This report runs base, AR1, and AR2 models (variable ~ time) for monthly SEV meteorological data using the nlme R package. Mean monthly air temperature, minimum monthly air temperature, maximum monthly air temperature, and total monthly precipitation are modeled. More sophisticated models will likely be required after this preliminary analysis. The main goal is to determine whether certain variables are changing over time during different months of the year for the SEV meteorological stations.
+
+
+----  
+
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(lubridate)
+library(nlme)
+library(MuMIn)
+library(gridExtra)
+library(kableExtra)
+
+# Load yearly data ---------------------------------------------
+
+path_to_files <- "../data/processed_data/"
+
+# load and only keep vars of interest
+m <- read_csv(paste0(path_to_files, "met_monthly_gap_filled.csv")) %>% 
+  mutate(sta = as.factor(sta)) %>% 
+  select(sta:ppt)
+```
+
+
+```{r}
+str(m)
+```
+
+
+```{r}
+summary(m)
+```
+
+
+----  
+
+
+## Prepare data for modeling -  
+
+Split data into individual met stations and add a time variable for nlme modeling.  
+
+```{r}
+
+# function to select station and variable and add 'time' var for a specific month of the year
+prepare_data_for_nlme <- function(data, sta, month) {
+  # data = dataframe to use
+  # sta = met station (in quotes)
+  # month = month of year (in quotes)
+  data %>% 
+    filter(sta == {{ sta }} & month == {{ month }}) %>% 
+    arrange(date) %>% 
+    mutate(time = as.numeric(as.factor(year)))
+}
+
+
+```
+
+
+----  
+
+## Set up functions -
+
+This code produces several functions that will be useful for producing cleaner code.  
+
+```{r}
+# function for plotting preliminary monthly graph -----------------------------------------------------------
+
+plot_monthly_prelim <- function(data, var, title, y_axis_label) {
+  # data = dataset
+  # var = variable (not in quotes)
+  # title = title for graph (in quotes)
+  # y_axis_label = label for y-axis (in quotes)
+  ggplot(data, aes(x = date, y = {{ var }}, col = sta)) +
+    geom_line(color = "burlywood") +
+    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    facet_wrap(~ sta) +
+    labs(title = title,
+         x = "Month",
+         y = y_axis_label)
+}
+
+
+
+by_month_lm <- function(data, var, station, title, y_axis_label) {
+  # data = dataset
+  # var = variable to plot (not in quotes)
+  # station = met station (in quotes)
+  # title = graph title
+  # y_axis_label = label for the graph's y-axis
+  m %>% 
+    filter(sta == station) %>% 
+    ggplot(., aes(x = year, y = {{ var }})) +
+    geom_line() +
+    geom_smooth(method = "lm") +
+    facet_wrap(~ month, scales = "free_y") +
+    ggtitle({{ title }})
+}
+
+
+# function for plotting graphs with best nlme model results ------------------------------------------------
+
+plot_monthly_results <- function(data, var, coeffs, title, y_axis_label) {
+  # data = dataset
+  # var = variable (not in quotes)
+  # coeffs = object containing coefficients and p-values of best model
+  # title = title for graph (in quotes)
+  # y_axis_label = label for y-axis (in quotes)
+  ggplot(data, aes(x = date, y = {{ var }})) +
+    geom_line(color = "burlywood") +
+    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    labs(title = title,
+         x = "Month",
+         y = y_axis_label,
+         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", coeffs[2,2], ")"))
+}
+
+
+# functions to run nlme models ----------------------------------------------------------
+
+# base model function
+base_nlme_model <- function(data, var, month) {
+  # data = dataframe
+  # var = var to model
+  # month = month of year
+  
+  data <- data %>% filter(month == month)
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+
+# AR1 model function
+AR1_nlme_model <- function(data, var, month) {
+  # data = dataframe
+  # var = var to model
+  # month = month of year
+  
+  data <- data %>% filter(month == month)
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 1),
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+# AR2 model function
+AR2_nlme_model <- function(data, var, month) {
+  # data = dataframe
+  # var = var to model
+  # month = month of year
+  
+  data <- data %>% filter(month == month)
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 2),
+      method = "ML",
+      na.action = na.omit)
+}
+```
+
+
+----  
+
+# Mean Monthly Air Temperature -  
+
+
+
+```{r}
+plot_monthly_prelim(m, airt, "Monthly Mean Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40 - June:  
+
+```{r}
+by_month_lm(m, airt, "40", "Met 40 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m40_6 <- prepare_data_for_nlme(m, "40", "6")
+
+m40_6_mbase <- base_nlme_model(m40_6, "airt", 6)
+m40_6_mAR1 <- AR1_nlme_model(m40_6, "airt", 6)
+m40_5_mAR2 <- AR2_nlme_model(m40_6, "airt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m40_6_mbase, m40_6_mAR1, m40_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m40_6_mbase)
+
+m40_6_coeffs <- summary(m40_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_6_plot <- plot_monthly_results(m40_6_mbase, airt, m40_6_coeffs, "Met 40 - Deep Well \nJune Mean Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42 - June:  
+
+```{r}
+by_month_lm(m, airt, "42", "Met 42 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m42_6 <- prepare_data_for_nlme(m, "42", "6")
+
+m42_6_mbase <- base_nlme_model(m42_6, "airt", 6)
+m42_6_mAR1 <- AR1_nlme_model(m42_6, "airt", 6)
+m42_5_mAR2 <- AR2_nlme_model(m42_6, "airt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m42_6_mbase, m42_6_mAR1, m42_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+### Met 49 - June:  
+
+```{r}
+by_month_lm(m, airt, "49", "Met 49 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m49_6 <- prepare_data_for_nlme(m, "49", "6")
+
+m49_6_mbase <- base_nlme_model(m49_6, "airt", 6)
+m49_6_mAR1 <- AR1_nlme_model(m49_6, "airt", 6)
+m49_5_mAR2 <- AR2_nlme_model(m49_6, "airt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m49_6_mbase, m49_6_mAR1, m49_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+### Met 50 - June:  
+
+```{r}
+by_month_lm(m, airt, "50", "Met 50 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m50_6 <- prepare_data_for_nlme(m, "50", "6")
+
+m50_6_mbase <- base_nlme_model(m50_6, "airt", 6)
+m50_6_mAR1 <- AR1_nlme_model(m50_6, "airt", 6)
+m50_5_mAR2 <- AR2_nlme_model(m50_6, "airt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m50_6_mbase, m50_6_mAR1, m50_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+### Summary Plots of Mean Monthly Air Temperature for June
+
+```{r}
+# airt results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+```
+

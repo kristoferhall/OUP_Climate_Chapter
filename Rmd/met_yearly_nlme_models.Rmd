@@ -42,7 +42,7 @@ summary(y)
 
 ## Prepare data for modeling -  
 
-Add a time variable for nlme modeling and split data into individual met stations.  
+Split data into individual met stations and add a time variable for nlme modeling.  
 
 ```{r}
 
@@ -52,6 +52,7 @@ prepare_data_for_nlme <- function(data, sta) {
   # sta = met station (in quotes)
   data %>% 
     filter(sta == {{ sta }}) %>% 
+    arrange(date) %>% 
     mutate(time = as.numeric(as.factor(year)))
 }
 
