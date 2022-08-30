@@ -54,9 +54,10 @@ plot_yearly_prelim <- function(data, var, title, y_axis_label) {
   # var = variable (not in quotes)
   # title = title for graph (in quotes)
   # y_axis_label = label for y-axis (in quotes)
-  ggplot(data, aes(x = year, y = {{ var }})) +
+  ggplot(data, aes(x = year, y = {{ var }}, col = sta)) +
     geom_line(color = "burlywood") +
     geom_smooth(method = "lm", color = "black", size = 0.6) +
+    facet_wrap(~ sta) +
     labs(title = title,
          x = "Year",
          y = y_axis_label)
@@ -85,16 +86,7 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
 # airt -------------------------------------------------------
 
 
-ggplot(y, aes(x = year, y = airt, color = sta)) +
-  geom_line() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~ sta) +
-  theme(legend.position="none") +
-  labs(title = "Yearly Mean Air Temperature (C)",
-       y = "Mean Air Temperature (C)",
-       x = "Year")
-
-plot_yearly_prelim(m40, airt, "Met 40 - Deep Well - Annual Mean Air Temperature", "Mean Air Temperature (C)")
+plot_yearly_prelim(y, airt, "Annual Mean Air Temperature", "Temperature (C)")
 
 
 # Met 40:
@@ -121,7 +113,7 @@ summary(m40_mbase)
 m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 
-(m40_plot <- plot_yearly_results(m40, airt, m40_coeffs, "Met 40 - Deep Well - Annual Mean Air Temperature", "Mean Air Temperature (C)"))
+(m40_plot <- plot_yearly_results(m40, airt, m40_coeffs, "Met 40 - Deep Well \nAnnual Mean Air Temperature", "Temperature (C)"))
 
 
 
@@ -149,7 +141,7 @@ AICc(m42_mbase, m42_mAR1, m42_mAR2)
 summary(m42_mbase)
 m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
-(m42_plot <- plot_yearly_results(m42, airt, m42_coeffs, "Met 42 - Deep Well - Annual Mean Air Temperature", "Mean Air Temperature (C)"))
+(m42_plot <- plot_yearly_results(m42, airt, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Mean Air Temperature", "Temperature (C)"))
 
 
 
@@ -176,7 +168,7 @@ AICc(m49_mbase, m49_mAR1, m49_mAR2)
 summary(m49_mbase)
 m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
-(m49_plot <- plot_yearly_results(m49, airt, m49_coeffs, "Met 49 - Deep Well - Annual Mean Air Temperature", "Mean Air Temperature (C)"))
+(m49_plot <- plot_yearly_results(m49, airt, m49_coeffs, "Met 49 - Five Points \nAnnual Mean Air Temperature", "Temperature (C)"))
 
 
 
@@ -204,7 +196,7 @@ summary(m50_mbase)
 m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 
-(m50_plot <- plot_yearly_results(m50, airt, m50_coeffs, "Met 50 - Deep Well - Annual Mean Air Temperature", "Mean Air Temperature (C)"))
+(m50_plot <- plot_yearly_results(m50, airt, m50_coeffs, "Met 50 - Blue Grama \nAnnual Mean Air Temperature", "Temperature (C)"))
 
 
 
@@ -224,41 +216,125 @@ grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
+# minair -------------------------------------------------------
 
 
+plot_yearly_prelim(y, minair, "Annual Minimum Air Temperature", "Temperature (C)")
 
 
+# Met 40:
 
+m40_mbase <- gls(minair ~ time,
+                 data = m40,
+                 method = "ML",
+                 na.action = na.omit)
+m40_mAR1 <- gls(minair ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m40_mAR2 <- gls(minair ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m40_mbase, m40_mAR1, m40_mAR2)
+# m40_mbase is best model
 
+summary(m40_mbase)
+m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 
+(m40_plot <- plot_yearly_results(m40, minair, m40_coeffs, "Met 40 - Deep Well \nAnnual Minimum Air Temperature", "Temperature (C)"))
 
 
 
 
+# Met 42:
 
+m42_mbase <- gls(minair ~ time,
+                 data = m42,
+                 method = "ML",
+                 na.action = na.omit)
+m42_mAR1 <- gls(minair ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m42_mAR2 <- gls(minair ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m42_mbase, m42_mAR1, m42_mAR2)
+# m42_mbase is best model 
 
+summary(m42_mbase)
+m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
+(m42_plot <- plot_yearly_results(m42, minair, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Minimum Air Temperature", "Temperature (C)"))
 
 
 
+# Met 49:
 
+m49_mbase <- gls(minair ~ time,
+                 data = m49,
+                 method = "ML",
+                 na.action = na.omit)
+m49_mAR1 <- gls(minair ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m49_mAR2 <- gls(minair ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m49_mbase, m49_mAR1, m49_mAR2)
+# m49_mbase is best model
 
+summary(m49_mbase)
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
+(m49_plot <- plot_yearly_results(m49, minair, m49_coeffs, "Met 49 - Five Points \nAnnual Minimum Air Temperature", "Temperature (C)"))
 
 
 
+# Met 50:
 
+m50_mbase <- gls(minair ~ time,
+                 data = m50,
+                 method = "ML",
+                 na.action = na.omit)
+m50_mAR1 <- gls(minair ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m50_mAR2 <- gls(minair ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m50_mbase, m50_mAR1, m50_mAR2)
+# m50_mbase is best model
 
+summary(m50_mbase)
+m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 
+(m50_plot <- plot_yearly_results(m50, minair, m50_coeffs, "Met 50 - Blue Grama \nAnnual Minimum Air Temperature", "Temperature (C)"))
 
 
 
+# minair results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
@@ -266,96 +342,250 @@ grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
+# maxair -------------------------------------------------------
 
 
+plot_yearly_prelim(y, maxair, "Annual Maximum Air Temperature", "Temperature (C)")
 
 
+# Met 40:
 
+m40_mbase <- gls(maxair ~ time,
+                 data = m40,
+                 method = "ML",
+                 na.action = na.omit)
+m40_mAR1 <- gls(maxair ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m40_mAR2 <- gls(maxair ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m40_mbase, m40_mAR1, m40_mAR2)
+# m40_mAR1 is best model ****
 
+summary(m40_mAR1)
+m40_coeffs <- summary(m40_mAR1)$tTable[,c(1, 4)]
 
 
+(m40_plot <- plot_yearly_results(m40, maxair, m40_coeffs, "Met 40 - Deep Well \nAnnual Maximum Air Temperature", "Temperature (C)"))
 
 
 
 
+# Met 42:
 
+m42_mbase <- gls(maxair ~ time,
+                 data = m42,
+                 method = "ML",
+                 na.action = na.omit)
+m42_mAR1 <- gls(maxair ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m42_mAR2 <- gls(maxair ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m42_mbase, m42_mAR1, m42_mAR2)
+# m42_mAR1 is best model 
 
+summary(m42_mAR1)
+m42_coeffs <- summary(m42_mAR1)$tTable[,c(1, 4)]
 
+(m42_plot <- plot_yearly_results(m42, maxair, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Maximum Air Temperature", "Temperature (C)"))
 
 
 
 
 
+# Met 49:
 
+m49_mbase <- gls(maxair ~ time,
+                 data = m49,
+                 method = "ML",
+                 na.action = na.omit)
+m49_mAR1 <- gls(maxair ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m49_mAR2 <- gls(maxair ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m49_mbase, m49_mAR1, m49_mAR2)
+# m49_mbase is best model
 
+summary(m49_mbase)
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
+(m49_plot <- plot_yearly_results(m49, maxair, m49_coeffs, "Met 49 - Five Points \nAnnual Maximum Air Temperature", "Temperature (C)"))
 
 
 
+# Met 50:
 
+m50_mbase <- gls(maxair ~ time,
+                 data = m50,
+                 method = "ML",
+                 na.action = na.omit)
+m50_mAR1 <- gls(maxair ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m50_mAR2 <- gls(maxair ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m50_mbase, m50_mAR1, m50_mAR2)
+# m50_mAR1 is best model
 
+summary(m50_mAR1)
+m50_coeffs <- summary(m50_mAR1)$tTable[,c(1, 4)]
 
 
+(m50_plot <- plot_yearly_results(m50, maxair, m50_coeffs, "Met 50 - Blue Grama \nAnnual Maximum Air Temperature", "Temperature (C)"))
 
 
 
+# maxair results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
 
 
+# ppt -------------------------------------------------------
 
 
+plot_yearly_prelim(y, ppt, "Annual Total Precipitation", "Precipitation (mm)")
 
 
+# Met 40:
 
+m40_mbase <- gls(ppt ~ time,
+                 data = m40,
+                 method = "ML",
+                 na.action = na.omit)
+m40_mAR1 <- gls(ppt ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m40_mAR2 <- gls(ppt ~ time,
+                data = m40,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m40_mbase, m40_mAR1, m40_mAR2)
+# m40_mbase is best model
 
+summary(m40_mbase)
+m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 
+(m40_plot <- plot_yearly_results(m40, ppt, m40_coeffs, "Met 40 - Deep Well \nAnnual Total Precipitation", "Precipitation (mm)"))
 
 
 
 
+# Met 42:
 
+m42_mbase <- gls(ppt ~ time,
+                 data = m42,
+                 method = "ML",
+                 na.action = na.omit)
+m42_mAR1 <- gls(ppt ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m42_mAR2 <- gls(ppt ~ time,
+                data = m42,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m42_mbase, m42_mAR1, m42_mAR2)
+# m42_mbase is best model 
 
+summary(m42_mbase)
+m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
+(m42_plot <- plot_yearly_results(m42, ppt, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Total Precipitation", "Precipitation (mm)"))
 
 
 
+# Met 49:
 
+m49_mbase <- gls(ppt ~ time,
+                 data = m49,
+                 method = "ML",
+                 na.action = na.omit)
+m49_mAR1 <- gls(ppt ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m49_mAR2 <- gls(ppt ~ time,
+                data = m49,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m49_mbase, m49_mAR1, m49_mAR2)
+# m49_mbase is best model
 
+summary(m49_mbase)
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
+(m49_plot <- plot_yearly_results(m49, ppt, m49_coeffs, "Met 49 - Five Points \nAnnual Total Precipitation", "Precipitation (mm)"))
 
 
 
+# Met 50:
 
+m50_mbase <- gls(ppt ~ time,
+                 data = m50,
+                 method = "ML",
+                 na.action = na.omit)
+m50_mAR1 <- gls(ppt ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 1),
+                method = "ML",
+                na.action = na.omit)
+m50_mAR2 <- gls(ppt ~ time,
+                data = m50,
+                correlation = corARMA(form = ~ time, p = 2),
+                method = "ML",
+                na.action = na.omit)
 
+AICc(m50_mbase, m50_mAR1, m50_mAR2)
+# m50_mbase is best model
 
+summary(m50_mbase)
+m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 
+(m50_plot <- plot_yearly_results(m50, ppt, m50_coeffs, "Met 50 - Blue Grama \nAnnual Total Precipitation", "Precipitation (mm)"))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# ppt results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
