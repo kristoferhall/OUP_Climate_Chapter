@@ -137,9 +137,6 @@ plot_yearly_prelim(y, airt, "Annual Mean Air Temperature", "Temperature (C)")
 
 
 
-run_nlme_models(m40, "airt")
-
-
 # Met 40:
 
 m40_mbase <- base_nlme_model(m40, "airt")

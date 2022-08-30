@@ -1,0 +1,730 @@
+---
+title: "SEV Met Yearly nlme Models"
+author: "KM Hall"
+date: "2022-08-30"
+output: html_document
+---
+
+This report runs base, AR1, and AR2 models (variable ~ time) for annual SEV meteorological data using the nlme R package. Mean annual air temperature, minimum annual air temperature, maximum annual air temperature, and total annual precipitation are modeled. More sophisticated models will likely be required after this preliminary analysis.  
+
+----  
+
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(lubridate)
+library(nlme)
+library(MuMIn)
+library(gridExtra)
+library(kableExtra)
+
+# Load yearly data ---------------------------------------------
+
+path_to_files <- "../data/processed_data/"
+
+# load and only keep vars of interest
+y <- read_csv(paste0(path_to_files, "met_yearly_gap_filled.csv")) %>% 
+  mutate(sta = as.factor(sta)) %>% 
+  select(sta:ppt)
+```
+
+
+```{r}
+str(y)
+```
+
+```{r}
+summary(y)
+```
+
+
+----  
+
+## Prepare data for modeling -  
+
+Add a time variable for nlme modeling and split data into individual met stations.  
+
+```{r}
+
+# function to select station and variable and add 'time' var
+prepare_data_for_nlme <- function(data, sta) {
+  # data = dataframe to use
+  # sta = met station (in quotes)
+  data %>% 
+    filter(sta == {{ sta }}) %>% 
+    mutate(time = as.numeric(as.factor(year)))
+}
+
+
+m40 <- prepare_data_for_nlme(y, "40")
+m42 <- prepare_data_for_nlme(y, "42")
+m49 <- prepare_data_for_nlme(y, "49")
+m50 <- prepare_data_for_nlme(y, "50")
+```
+
+----  
+
+## Set up functions -
+
+This code produces several functions that will be useful for producing cleaner code.  
+
+```{r}
+# function for plotting preliminary yearly graph -----------------------------------------------------------
+
+plot_yearly_prelim <- function(data, var, title, y_axis_label) {
+  # data = dataset
+  # var = variable (not in quotes)
+  # title = title for graph (in quotes)
+  # y_axis_label = label for y-axis (in quotes)
+  ggplot(data, aes(x = year, y = {{ var }}, col = sta)) +
+    geom_line(color = "burlywood") +
+    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    facet_wrap(~ sta) +
+    labs(title = title,
+         x = "Year",
+         y = y_axis_label)
+}
+
+# function for plotting graphs with best nlme model results ------------------------------------------------
+
+plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
+  # data = dataset
+  # var = variable (not in quotes)
+  # coeffs = object containing coefficients and p-values of best model
+  # title = title for graph (in quotes)
+  # y_axis_label = label for y-axis (in quotes)
+  ggplot(data, aes(x = year, y = {{ var }})) +
+    geom_line(color = "burlywood") +
+    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    labs(title = title,
+         x = "Year",
+         y = y_axis_label,
+         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", coeffs[2,2], ")"))
+}
+
+
+# functions to run nlme models ----------------------------------------------------------
+
+# base model function
+base_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+
+# AR1 model function
+AR1_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 1),
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+# AR2 model function
+AR2_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 2),
+      method = "ML",
+      na.action = na.omit)
+}
+```
+
+
+----  
+
+# Mean Annual Air Temperature (C) - 
+
+```{r}
+plot_yearly_prelim(y, airt, "Annual Mean Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40:  
+
+```{r}
+# Met 40:
+
+m40_mbase <- base_nlme_model(m40, "airt")
+m40_mAR1 <- AR1_nlme_model(m40, "airt")
+m40_mAR2 <- AR2_nlme_model(m40, "airt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m40_mbase, m40_mAR1, m40_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m40_mbase)
+
+m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_plot <- plot_yearly_results(m40, airt, m40_coeffs, "Met 40 - Deep Well \nAnnual Mean Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42:  
+
+```{r}
+# Met 42:
+
+m42_mbase <- base_nlme_model(m42, "airt")
+m42_mAR1 <- AR1_nlme_model(m42, "airt")
+m42_mAR2 <- AR2_nlme_model(m42, "airt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m42_mbase, m42_mAR1, m42_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m42_mbase)
+
+m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_plot <- plot_yearly_results(m42, airt, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Mean Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 49:  
+
+```{r}
+# Met 49:
+
+m49_mbase <- base_nlme_model(m49, "airt")
+m49_mAR1 <- AR1_nlme_model(m49, "airt")
+m49_mAR2 <- AR2_nlme_model(m49, "airt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m49_mbase, m49_mAR1, m49_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m49_mbase)
+
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_plot <- plot_yearly_results(m49, airt, m49_coeffs, "Met 49 - Five Points \nAnnual Mean Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 50:  
+
+```{r}
+# Met 50:
+
+m50_mbase <- base_nlme_model(m50, "airt")
+m50_mAR1 <- AR1_nlme_model(m50, "airt")
+m50_mAR2 <- AR2_nlme_model(m50, "airt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m50_mbase, m50_mAR1, m50_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m50_mbase)
+
+m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_plot <- plot_yearly_results(m50, airt, m50_coeffs, "Met 50 - Blue Grama \nAnnual Mean Air Temperature", "Temperature (C)"))
+```
+
+
+
+### Summary Plots of Mean Annual Air Temperature
+
+```{r}
+# airt results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+```
+
+
+
+----  
+
+# Minimum Annual Air Temperature (C) - 
+
+```{r}
+plot_yearly_prelim(y, minair, "Annual Minimum Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40:  
+
+```{r}
+# Met 40:
+
+m40_mbase <- base_nlme_model(m40, "minair")
+m40_mAR1 <- AR1_nlme_model(m40, "minair")
+m40_mAR2 <- AR2_nlme_model(m40, "minair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m40_mbase, m40_mAR1, m40_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m40_mbase)
+
+m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_plot <- plot_yearly_results(m40, minair, m40_coeffs, "Met 40 - Deep Well \nAnnual Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42:  
+
+```{r}
+# Met 42:
+
+m42_mbase <- base_nlme_model(m42, "minair")
+m42_mAR1 <- AR1_nlme_model(m42, "minair")
+m42_mAR2 <- AR2_nlme_model(m42, "minair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m42_mbase, m42_mAR1, m42_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m42_mbase)
+
+m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_plot <- plot_yearly_results(m42, minair, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 49:  
+
+```{r}
+# Met 49:
+
+m49_mbase <- base_nlme_model(m49, "minair")
+m49_mAR1 <- AR1_nlme_model(m49, "minair")
+m49_mAR2 <- AR2_nlme_model(m49, "minair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m49_mbase, m49_mAR1, m49_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m49_mbase)
+
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_plot <- plot_yearly_results(m49, minair, m49_coeffs, "Met 49 - Five Points \nAnnual Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 50:  
+
+```{r}
+# Met 50:
+
+m50_mbase <- base_nlme_model(m50, "minair")
+m50_mAR1 <- AR1_nlme_model(m50, "minair")
+m50_mAR2 <- AR2_nlme_model(m50, "minair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m50_mbase, m50_mAR1, m50_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m50_mbase)
+
+m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_plot <- plot_yearly_results(m50, minair, m50_coeffs, "Met 50 - Blue Grama \nAnnual Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+
+### Summary Plots of Minimum Annual Air Temperature
+
+```{r}
+# minair results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+```
+
+
+
+----  
+
+# Maximum Annual Air Temperature (C) - 
+
+```{r}
+plot_yearly_prelim(y, maxair, "Annual Maximum Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40:  
+
+```{r}
+# Met 40:
+
+m40_mbase <- base_nlme_model(m40, "maxair")
+m40_mAR1 <- AR1_nlme_model(m40, "maxair")
+m40_mAR2 <- AR2_nlme_model(m40, "maxair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m40_mbase, m40_mAR1, m40_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+The AR1 model has the lowest AICc score. This model is used for plotting.    
+
+```{r}
+summary(m40_mAR1)
+
+m40_coeffs <- summary(m40_mAR1)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_plot <- plot_yearly_results(m40, maxair, m40_coeffs, "Met 40 - Deep Well \nAnnual Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42:  
+
+```{r}
+# Met 42:
+
+m42_mbase <- base_nlme_model(m42, "maxair")
+m42_mAR1 <- AR1_nlme_model(m42, "maxair")
+m42_mAR2 <- AR2_nlme_model(m42, "maxair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m42_mbase, m42_mAR1, m42_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+The AR1 model has the lowest AICc score. This model is used for plotting.  
+
+
+
+```{r}
+summary(m42_mAR1)
+
+m42_coeffs <- summary(m42_mAR1)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_plot <- plot_yearly_results(m42, maxair, m42_coeffs, "Met 42 - Cerro Montoso \nAnnual Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 49:  
+
+```{r}
+# Met 49:
+
+m49_mbase <- base_nlme_model(m49, "maxair")
+m49_mAR1 <- AR1_nlme_model(m49, "maxair")
+m49_mAR2 <- AR2_nlme_model(m49, "maxair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m49_mbase, m49_mAR1, m49_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+The base model has the lowest AICc and is used for plotting.  
+
+```{r}
+summary(m49_mbase)
+
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_plot <- plot_yearly_results(m49, maxair, m49_coeffs, "Met 49 - Five Points \nAnnual Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 50:  
+
+```{r}
+# Met 50:
+
+m50_mbase <- base_nlme_model(m50, "maxair")
+m50_mAR1 <- AR1_nlme_model(m50, "maxair")
+m50_mAR2 <- AR2_nlme_model(m50, "maxair")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m50_mbase, m50_mAR1, m50_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+The AR1 model has the lowest AICc score. This model is used for plotting.  
+
+
+```{r}
+summary(m50_mAR1)
+
+m50_coeffs <- summary(m50_mAR1)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_plot <- plot_yearly_results(m50, maxair, m50_coeffs, "Met 50 - Blue Grama \nAnnual Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+
+### Summary Plots of Maximum Annual Air Temperature
+
+```{r}
+# maxair results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+```
+
+
+
+----  
+
+# Total Annual Precipitation (mm) - 
+
+```{r}
+plot_yearly_prelim(y, ppt, "Total Annual Precipitation", "Precipitation (mm)")
+```
+
+
+### Met 40:  
+
+```{r}
+# Met 40:
+
+m40_mbase <- base_nlme_model(m40, "ppt")
+m40_mAR1 <- AR1_nlme_model(m40, "ppt")
+m40_mAR2 <- AR2_nlme_model(m40, "ppt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m40_mbase, m40_mAR1, m40_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m40_mbase)
+
+m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_plot <- plot_yearly_results(m40, ppt, m40_coeffs, "Met 40 - Deep Well \nTotal Annual Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 42:  
+
+```{r}
+# Met 42:
+
+m42_mbase <- base_nlme_model(m42, "ppt")
+m42_mAR1 <- AR1_nlme_model(m42, "ppt")
+m42_mAR2 <- AR2_nlme_model(m42, "ppt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m42_mbase, m42_mAR1, m42_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m42_mbase)
+
+m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_plot <- plot_yearly_results(m42, ppt, m42_coeffs, "Met 42 - Cerro Montoso \nTotal Annual Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 49:  
+
+```{r}
+# Met 49:
+
+m49_mbase <- base_nlme_model(m49, "ppt")
+m49_mAR1 <- AR1_nlme_model(m49, "ppt")
+m49_mAR2 <- AR2_nlme_model(m49, "ppt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m49_mbase, m49_mAR1, m49_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m49_mbase)
+
+m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_plot <- plot_yearly_results(m49, ppt, m49_coeffs, "Met 49 - Five Points \nTotal Annual Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 50:  
+
+```{r}
+# Met 50:
+
+m50_mbase <- base_nlme_model(m50, "ppt")
+m50_mAR1 <- AR1_nlme_model(m50, "ppt")
+m50_mAR2 <- AR2_nlme_model(m50, "ppt")
+  
+```
+
+AICc scores:
+```{r}
+AICc(m50_mbase, m50_mAR1, m50_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+
+```{r}
+summary(m50_mbase)
+
+m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_plot <- plot_yearly_results(m50, ppt, m50_coeffs, "Met 50 - Blue Grama \nTotal Annual Precipitation", "Precipitation (mm)"))
+```
+
+
+
+### Summary Plots of Total Annual Precipitation
+
+```{r}
+# ppt results 
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+```
+
