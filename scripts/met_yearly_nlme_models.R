@@ -81,6 +81,51 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
 }
 
 
+# functions to run nlme models ----------------------------------------------------------
+
+# base model function
+base_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+
+# AR1 model function
+AR1_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 1),
+      method = "ML",
+      na.action = na.omit)
+}
+
+
+# AR2 model function
+AR2_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      correlation = corARMA(form = ~ time, p = 2),
+      method = "ML",
+      na.action = na.omit)
+}
 
 
 # airt -------------------------------------------------------
@@ -89,22 +134,19 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
 plot_yearly_prelim(y, airt, "Annual Mean Air Temperature", "Temperature (C)")
 
 
+
+
+
+run_nlme_models(m40, "airt")
+
+
 # Met 40:
 
-m40_mbase <- gls(airt ~ time,
-                 data = m40,
-                 method = "ML",
-                 na.action = na.omit)
-m40_mAR1 <- gls(airt ~ time,
-            data = m40,
-            correlation = corARMA(form = ~ time, p = 1),
-            method = "ML",
-            na.action = na.omit)
-m40_mAR2 <- gls(airt ~ time,
-            data = m40,
-            correlation = corARMA(form = ~ time, p = 2),
-            method = "ML",
-            na.action = na.omit)
+m40_mbase <- base_nlme_model(m40, "airt")
+m40_mAR1 <- AR1_nlme_model(m40, "airt")
+m40_mAR2 <- AR2_nlme_model(m40, "airt")
+  
+
 
 AICc(m40_mbase, m40_mAR1, m40_mAR2)
 # m40_mbase is best model
@@ -117,23 +159,11 @@ m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 
 
-
 # Met 42:
 
-m42_mbase <- gls(airt ~ time,
-                 data = m42,
-                 method = "ML",
-                 na.action = na.omit)
-m42_mAR1 <- gls(airt ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m42_mAR2 <- gls(airt ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m42_mbase <- base_nlme_model(m42, "airt")
+m42_mAR1 <- AR1_nlme_model(m42, "airt")
+m42_mAR2 <- AR2_nlme_model(m42, "airt")
 
 AICc(m42_mbase, m42_mAR1, m42_mAR2)
 # m42_mbase is best model 
@@ -147,20 +177,9 @@ m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
 # Met 49:
 
-m49_mbase <- gls(airt ~ time,
-                 data = m49,
-                 method = "ML",
-                 na.action = na.omit)
-m49_mAR1 <- gls(airt ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m49_mAR2 <- gls(airt ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m49_mbase <- base_nlme_model(m49, "airt")
+m49_mAR1 <- AR1_nlme_model(m49, "airt")
+m49_mAR2 <- AR2_nlme_model(m49, "airt")
 
 AICc(m49_mbase, m49_mAR1, m49_mAR2)
 # m49_mbase is best model
@@ -174,20 +193,9 @@ m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
 # Met 50:
 
-m50_mbase <- gls(airt ~ time,
-                 data = m50,
-                 method = "ML",
-                 na.action = na.omit)
-m50_mAR1 <- gls(airt ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m50_mAR2 <- gls(airt ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m50_mbase <- base_nlme_model(m50, "airt")
+m50_mAR1 <- AR1_nlme_model(m50, "airt")
+m50_mAR2 <- AR2_nlme_model(m50, "airt")
 
 AICc(m50_mbase, m50_mAR1, m50_mAR2)
 # m50_mbase is best model
@@ -206,16 +214,6 @@ grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
-
-
-
-
-
-
-
-
-
-
 # minair -------------------------------------------------------
 
 
@@ -224,20 +222,9 @@ plot_yearly_prelim(y, minair, "Annual Minimum Air Temperature", "Temperature (C)
 
 # Met 40:
 
-m40_mbase <- gls(minair ~ time,
-                 data = m40,
-                 method = "ML",
-                 na.action = na.omit)
-m40_mAR1 <- gls(minair ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m40_mAR2 <- gls(minair ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m40_mbase <- base_nlme_model(m40, "minair")
+m40_mAR1 <- AR1_nlme_model(m40, "minair")
+m40_mAR2 <- AR2_nlme_model(m40, "minair")
 
 AICc(m40_mbase, m40_mAR1, m40_mAR2)
 # m40_mbase is best model
@@ -253,20 +240,9 @@ m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 # Met 42:
 
-m42_mbase <- gls(minair ~ time,
-                 data = m42,
-                 method = "ML",
-                 na.action = na.omit)
-m42_mAR1 <- gls(minair ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m42_mAR2 <- gls(minair ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m42_mbase <- base_nlme_model(m42, "minair")
+m42_mAR1 <- AR1_nlme_model(m42, "minair")
+m42_mAR2 <- AR2_nlme_model(m42, "minair")
 
 AICc(m42_mbase, m42_mAR1, m42_mAR2)
 # m42_mbase is best model 
@@ -280,20 +256,9 @@ m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
 # Met 49:
 
-m49_mbase <- gls(minair ~ time,
-                 data = m49,
-                 method = "ML",
-                 na.action = na.omit)
-m49_mAR1 <- gls(minair ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m49_mAR2 <- gls(minair ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m49_mbase <- base_nlme_model(m49, "minair")
+m49_mAR1 <- AR1_nlme_model(m49, "minair")
+m49_mAR2 <- AR2_nlme_model(m49, "minair")
 
 AICc(m49_mbase, m49_mAR1, m49_mAR2)
 # m49_mbase is best model
@@ -307,20 +272,9 @@ m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
 # Met 50:
 
-m50_mbase <- gls(minair ~ time,
-                 data = m50,
-                 method = "ML",
-                 na.action = na.omit)
-m50_mAR1 <- gls(minair ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m50_mAR2 <- gls(minair ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m50_mbase <- base_nlme_model(m50, "minair")
+m50_mAR1 <- AR1_nlme_model(m50, "minair")
+m50_mAR2 <- AR2_nlme_model(m50, "minair")
 
 AICc(m50_mbase, m50_mAR1, m50_mAR2)
 # m50_mbase is best model
@@ -350,20 +304,9 @@ plot_yearly_prelim(y, maxair, "Annual Maximum Air Temperature", "Temperature (C)
 
 # Met 40:
 
-m40_mbase <- gls(maxair ~ time,
-                 data = m40,
-                 method = "ML",
-                 na.action = na.omit)
-m40_mAR1 <- gls(maxair ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m40_mAR2 <- gls(maxair ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m40_mbase <- base_nlme_model(m40, "maxair")
+m40_mAR1 <- AR1_nlme_model(m40, "maxair")
+m40_mAR2 <- AR2_nlme_model(m40, "maxair")
 
 AICc(m40_mbase, m40_mAR1, m40_mAR2)
 # m40_mAR1 is best model ****
@@ -379,20 +322,9 @@ m40_coeffs <- summary(m40_mAR1)$tTable[,c(1, 4)]
 
 # Met 42:
 
-m42_mbase <- gls(maxair ~ time,
-                 data = m42,
-                 method = "ML",
-                 na.action = na.omit)
-m42_mAR1 <- gls(maxair ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m42_mAR2 <- gls(maxair ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m42_mbase <- base_nlme_model(m42, "maxair")
+m42_mAR1 <- AR1_nlme_model(m42, "maxair")
+m42_mAR2 <- AR2_nlme_model(m42, "maxair")
 
 AICc(m42_mbase, m42_mAR1, m42_mAR2)
 # m42_mAR1 is best model 
@@ -405,23 +337,11 @@ m42_coeffs <- summary(m42_mAR1)$tTable[,c(1, 4)]
 
 
 
-
 # Met 49:
 
-m49_mbase <- gls(maxair ~ time,
-                 data = m49,
-                 method = "ML",
-                 na.action = na.omit)
-m49_mAR1 <- gls(maxair ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m49_mAR2 <- gls(maxair ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m49_mbase <- base_nlme_model(m49, "maxair") 
+m49_mAR1 <- AR1_nlme_model(m49, "maxair")
+m49_mAR2 <- AR2_nlme_model(m49, "maxair")
 
 AICc(m49_mbase, m49_mAR1, m49_mAR2)
 # m49_mbase is best model
@@ -435,20 +355,9 @@ m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
 # Met 50:
 
-m50_mbase <- gls(maxair ~ time,
-                 data = m50,
-                 method = "ML",
-                 na.action = na.omit)
-m50_mAR1 <- gls(maxair ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m50_mAR2 <- gls(maxair ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m50_mbase <- base_nlme_model(m50, "maxair")
+m50_mAR1 <- AR1_nlme_model(m50, "maxair")
+m50_mAR2 <- AR2_nlme_model(m50, "maxair")
 
 AICc(m50_mbase, m50_mAR1, m50_mAR2)
 # m50_mAR1 is best model
@@ -476,20 +385,9 @@ plot_yearly_prelim(y, ppt, "Annual Total Precipitation", "Precipitation (mm)")
 
 # Met 40:
 
-m40_mbase <- gls(ppt ~ time,
-                 data = m40,
-                 method = "ML",
-                 na.action = na.omit)
-m40_mAR1 <- gls(ppt ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m40_mAR2 <- gls(ppt ~ time,
-                data = m40,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m40_mbase <- base_nlme_model(m40, "ppt")
+m40_mAR1 <- AR1_nlme_model(m40, "ppt")
+m40_mAR2 <- AR2_nlme_model(m40, "ppt")
 
 AICc(m40_mbase, m40_mAR1, m40_mAR2)
 # m40_mbase is best model
@@ -505,20 +403,9 @@ m40_coeffs <- summary(m40_mbase)$tTable[,c(1, 4)]
 
 # Met 42:
 
-m42_mbase <- gls(ppt ~ time,
-                 data = m42,
-                 method = "ML",
-                 na.action = na.omit)
-m42_mAR1 <- gls(ppt ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m42_mAR2 <- gls(ppt ~ time,
-                data = m42,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m42_mbase <- base_nlme_model(m42, "ppt")
+m42_mAR1 <- AR1_nlme_model(m42, "ppt")
+m42_mAR2 <- AR2_nlme_model(m42, "ppt")
 
 AICc(m42_mbase, m42_mAR1, m42_mAR2)
 # m42_mbase is best model 
@@ -532,20 +419,9 @@ m42_coeffs <- summary(m42_mbase)$tTable[,c(1, 4)]
 
 # Met 49:
 
-m49_mbase <- gls(ppt ~ time,
-                 data = m49,
-                 method = "ML",
-                 na.action = na.omit)
-m49_mAR1 <- gls(ppt ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m49_mAR2 <- gls(ppt ~ time,
-                data = m49,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m49_mbase <- base_nlme_model(m49, "ppt")
+m49_mAR1 <- AR1_nlme_model(m49, "ppt")
+m49_mAR2 <- AR2_nlme_model(m49, "ppt")
 
 AICc(m49_mbase, m49_mAR1, m49_mAR2)
 # m49_mbase is best model
@@ -559,20 +435,9 @@ m49_coeffs <- summary(m49_mbase)$tTable[,c(1, 4)]
 
 # Met 50:
 
-m50_mbase <- gls(ppt ~ time,
-                 data = m50,
-                 method = "ML",
-                 na.action = na.omit)
-m50_mAR1 <- gls(ppt ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 1),
-                method = "ML",
-                na.action = na.omit)
-m50_mAR2 <- gls(ppt ~ time,
-                data = m50,
-                correlation = corARMA(form = ~ time, p = 2),
-                method = "ML",
-                na.action = na.omit)
+m50_mbase <- base_nlme_model(m50, "ppt")
+m50_mAR1 <- AR1_nlme_model(m50, "ppt")
+m50_mAR2 <- AR2_nlme_model(m50, "ppt")
 
 AICc(m50_mbase, m50_mAR1, m50_mAR2)
 # m50_mbase is best model
@@ -586,10 +451,6 @@ m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 # ppt results 
 grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
-
-
-
-
 
 
 
