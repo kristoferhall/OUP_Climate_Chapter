@@ -5,7 +5,7 @@ date: "2022-08-30"
 output: html_document
 ---
 
-This report runs base, AR1, and AR2 models (variable ~ time) for monthly SEV meteorological data using the nlme R package. Mean monthly air temperature, minimum monthly air temperature, maximum monthly air temperature, and total monthly precipitation are modeled. More sophisticated models will likely be required after this preliminary analysis. The main goal is to determine whether certain variables are changing over time during different months of the year for the SEV meteorological stations.
+This report runs base, AR1, and AR2 models (variable ~ time) for monthly SEV meteorological data using the nlme R package. Mean monthly air temperature, minimum monthly air temperature, maximum monthly air temperature, and total monthly precipitation are modeled. More sophisticated models will likely be required after this preliminary analysis. The main goal is to determine whether certain variables are changing over time for different months of the year for the SEV meteorological stations.
 
 
 ----  
@@ -221,7 +221,7 @@ m40_6_coeffs <- summary(m40_6_mbase)$tTable[,c(1, 4)]
 
 
 ```{r}
-(m40_6_plot <- plot_monthly_results(m40_6_mbase, airt, m40_6_coeffs, "Met 40 - Deep Well \nJune Mean Air Temperature", "Temperature (C)"))
+(m40_6_plot <- plot_monthly_results(m40_6, airt, m40_6_coeffs, "Met 40 - Deep Well \nJune Mean Air Temperature", "Temperature (C)"))
 ```
 
 
@@ -247,11 +247,22 @@ AICc(m42_6_mbase, m42_6_mAR1, m42_5_mAR2) %>%
   kable_styling(full_width = FALSE, position = "left")
 ```
 
+```{r}
+summary(m42_6_mbase)
+
+m42_6_coeffs <- summary(m42_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_6_plot <- plot_monthly_results(m42_6, airt, m42_6_coeffs, "Met 42 - Cerro Montoso \nJune Mean Air Temperature", "Temperature (C)"))
+```
+
 
 ### Met 49 - June:  
 
 ```{r}
-by_month_lm(m, airt, "49", "Met 49 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
+by_month_lm(m49_6, airt, "49", "Met 49 - Deep Well \nMean Monthly Air Temperature", "Temperature (C)")
 ```
 
 
@@ -268,6 +279,17 @@ AICc scores:
 AICc(m49_6_mbase, m49_6_mAR1, m49_5_mAR2) %>% 
   kbl() %>% 
   kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m49_6_mbase)
+
+m49_6_coeffs <- summary(m49_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_6_plot <- plot_monthly_results(m49_6, airt, m49_6_coeffs, "Met 49 - Five Points \nJune Mean Air Temperature", "Temperature (C)"))
 ```
 
 
@@ -293,11 +315,22 @@ AICc(m50_6_mbase, m50_6_mAR1, m50_5_mAR2) %>%
   kable_styling(full_width = FALSE, position = "left")
 ```
 
+```{r}
+summary(m50_6_mbase)
+
+m50_6_coeffs <- summary(m50_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_6_plot <- plot_monthly_results(m50_6, airt, m50_6_coeffs, "Met 50 - Blue Grama \nJune Mean Air Temperature", "Temperature (C)"))
+```
+
 
 ### Summary Plots of Mean Monthly Air Temperature for June
 
 ```{r}
 # airt results 
-grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2)
 ```
 
