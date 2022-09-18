@@ -331,6 +331,511 @@ m50_6_coeffs <- summary(m50_6_mbase)$tTable[,c(1, 4)]
 
 ```{r}
 # airt results 
-grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2)
+(airt_6_graphs <- grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2))
 ```
+
+
+
+
+----  
+
+# Maximum Monthly Air Temperature -  
+
+
+
+```{r}
+plot_monthly_prelim(m, maxair, "Monthly Maximum Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40 - June:  
+
+```{r}
+by_month_lm(m, maxair, "40", "Met 40 - Deep Well \nMaximum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m40_6 <- prepare_data_for_nlme(m, "40", "6")
+
+m40_6_mbase <- base_nlme_model(m40_6, "maxair", 6)
+m40_6_mAR1 <- AR1_nlme_model(m40_6, "maxair", 6)
+m40_5_mAR2 <- AR2_nlme_model(m40_6, "maxair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m40_6_mbase, m40_6_mAR1, m40_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m40_6_mbase)
+
+m40_6_coeffs <- summary(m40_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_6_plot <- plot_monthly_results(m40_6, maxair, m40_6_coeffs, "Met 40 - Deep Well \nJune Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42 - June:  
+
+```{r}
+by_month_lm(m, maxair, "42", "Met 42 - Deep Well \nMaximum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m42_6 <- prepare_data_for_nlme(m, "42", "6")
+
+m42_6_mbase <- base_nlme_model(m42_6, "maxair", 6)
+m42_6_mAR1 <- AR1_nlme_model(m42_6, "maxair", 6)
+m42_5_mAR2 <- AR2_nlme_model(m42_6, "maxair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m42_6_mbase, m42_6_mAR1, m42_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m42_6_mbase)
+
+m42_6_coeffs <- summary(m42_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_6_plot <- plot_monthly_results(m42_6, maxair, m42_6_coeffs, "Met 42 - Cerro Montoso \nJune Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 49 - June:  
+
+```{r}
+by_month_lm(m49_6, maxair, "49", "Met 49 - Deep Well \nMaximum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m49_6 <- prepare_data_for_nlme(m, "49", "6")
+
+m49_6_mbase <- base_nlme_model(m49_6, "maxair", 6)
+m49_6_mAR1 <- AR1_nlme_model(m49_6, "maxair", 6)
+m49_5_mAR2 <- AR2_nlme_model(m49_6, "maxair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m49_6_mbase, m49_6_mAR1, m49_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m49_6_mbase)
+
+m49_6_coeffs <- summary(m49_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_6_plot <- plot_monthly_results(m49_6, maxair, m49_6_coeffs, "Met 49 - Five Points \nJune Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 50 - June:  
+
+```{r}
+by_month_lm(m, maxair, "50", "Met 50 - Deep Well \nMaximum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m50_6 <- prepare_data_for_nlme(m, "50", "6")
+
+m50_6_mbase <- base_nlme_model(m50_6, "maxair", 6)
+m50_6_mAR1 <- AR1_nlme_model(m50_6, "maxair", 6)
+m50_5_mAR2 <- AR2_nlme_model(m50_6, "maxair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m50_6_mbase, m50_6_mAR1, m50_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m50_6_mbase)
+
+m50_6_coeffs <- summary(m50_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_6_plot <- plot_monthly_results(m50_6, maxair, m50_6_coeffs, "Met 50 - Blue Grama \nJune Maximum Air Temperature", "Temperature (C)"))
+```
+
+
+### Summary Plots of Maximum Monthly Air Temperature for June
+
+```{r}
+# maxair results 
+(maxair_6_graphs <- grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2))
+```
+
+
+
+
+
+
+
+----  
+
+# Minimum Monthly Air Temperature -  
+
+
+
+```{r}
+plot_monthly_prelim(m, minair, "Monthly Minimum Air Temperature", "Temperature (C)")
+```
+
+
+### Met 40 - June:  
+
+```{r}
+by_month_lm(m, minair, "40", "Met 40 - Deep Well \nMinimum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m40_6 <- prepare_data_for_nlme(m, "40", "6")
+
+m40_6_mbase <- base_nlme_model(m40_6, "minair", 6)
+m40_6_mAR1 <- AR1_nlme_model(m40_6, "minair", 6)
+m40_5_mAR2 <- AR2_nlme_model(m40_6, "minair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m40_6_mbase, m40_6_mAR1, m40_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m40_6_mbase)
+
+m40_6_coeffs <- summary(m40_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_6_plot <- plot_monthly_results(m40_6, minair, m40_6_coeffs, "Met 40 - Deep Well \nJune Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 42 - June:  
+
+```{r}
+by_month_lm(m, minair, "42", "Met 42 - Deep Well \nMinimum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m42_6 <- prepare_data_for_nlme(m, "42", "6")
+
+m42_6_mbase <- base_nlme_model(m42_6, "minair", 6)
+m42_6_mAR1 <- AR1_nlme_model(m42_6, "minair", 6)
+m42_5_mAR2 <- AR2_nlme_model(m42_6, "minair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m42_6_mbase, m42_6_mAR1, m42_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m42_6_mbase)
+
+m42_6_coeffs <- summary(m42_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_6_plot <- plot_monthly_results(m42_6, minair, m42_6_coeffs, "Met 42 - Cerro Montoso \nJune Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 49 - June:  
+
+```{r}
+by_month_lm(m49_6, minair, "49", "Met 49 - Deep Well \nMinimum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m49_6 <- prepare_data_for_nlme(m, "49", "6")
+
+m49_6_mbase <- base_nlme_model(m49_6, "minair", 6)
+m49_6_mAR1 <- AR1_nlme_model(m49_6, "minair", 6)
+m49_5_mAR2 <- AR2_nlme_model(m49_6, "minair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m49_6_mbase, m49_6_mAR1, m49_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m49_6_mAR1)
+
+m49_6_coeffs <- summary(m49_6_mAR1)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_6_plot <- plot_monthly_results(m49_6, minair, m49_6_coeffs, "Met 49 - Five Points \nJune Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Met 50 - June:  
+
+```{r}
+by_month_lm(m, minair, "50", "Met 50 - Deep Well \nMinimum Monthly Air Temperature", "Temperature (C)")
+```
+
+
+```{r}
+m50_6 <- prepare_data_for_nlme(m, "50", "6")
+
+m50_6_mbase <- base_nlme_model(m50_6, "minair", 6)
+m50_6_mAR1 <- AR1_nlme_model(m50_6, "minair", 6)
+m50_5_mAR2 <- AR2_nlme_model(m50_6, "minair", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m50_6_mbase, m50_6_mAR1, m50_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m50_6_mAR1)
+
+m50_6_coeffs <- summary(m50_6_mAR1)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_6_plot <- plot_monthly_results(m50_6, minair, m50_6_coeffs, "Met 50 - Blue Grama \nJune Minimum Air Temperature", "Temperature (C)"))
+```
+
+
+### Summary Plots of Minimum Monthly Air Temperature for June
+
+```{r}
+# minair results 
+(minair_6_graphs <- grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2))
+```
+
+
+
+# June Minimum, Mean, and Maximum Air Temperature Results -  
+
+```{r}
+minair_6_graphs
+```
+
+```{r}
+airt_6_graphs
+```
+
+
+```{r}
+maxair_6_graphs
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----  
+
+#  Monthly Precipitation -  
+
+
+
+```{r}
+plot_monthly_prelim(m, ppt, "Monthly Precipitation", "Precipitation (mm)")
+```
+
+
+### Met 40 - June:  
+
+```{r}
+by_month_lm(m, ppt, "40", "Met 40 - Deep Well \n Monthly Precipitation", "Precipitation (mm)")
+```
+
+
+```{r}
+m40_6 <- prepare_data_for_nlme(m, "40", "6")
+
+m40_6_mbase <- base_nlme_model(m40_6, "ppt", 6)
+m40_6_mAR1 <- AR1_nlme_model(m40_6, "ppt", 6)
+m40_5_mAR2 <- AR2_nlme_model(m40_6, "ppt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m40_6_mbase, m40_6_mAR1, m40_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m40_6_mbase)
+
+m40_6_coeffs <- summary(m40_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m40_6_plot <- plot_monthly_results(m40_6, ppt, m40_6_coeffs, "Met 40 - Deep Well \nJune Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 42 - June:  
+
+```{r}
+by_month_lm(m, ppt, "42", "Met 42 - Deep Well \n Monthly Precipitation", "Precipitation (mm)")
+```
+
+
+```{r}
+m42_6 <- prepare_data_for_nlme(m, "42", "6")
+
+m42_6_mbase <- base_nlme_model(m42_6, "ppt", 6)
+m42_6_mAR1 <- AR1_nlme_model(m42_6, "ppt", 6)
+m42_5_mAR2 <- AR2_nlme_model(m42_6, "ppt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m42_6_mbase, m42_6_mAR1, m42_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m42_6_mbase)
+
+m42_6_coeffs <- summary(m42_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m42_6_plot <- plot_monthly_results(m42_6, ppt, m42_6_coeffs, "Met 42 - Cerro Montoso \nJune Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 49 - June:  
+
+```{r}
+by_month_lm(m49_6, ppt, "49", "Met 49 - Deep Well \n Monthly Precipitation", "Precipitation (mm)")
+```
+
+
+```{r}
+m49_6 <- prepare_data_for_nlme(m, "49", "6")
+
+m49_6_mbase <- base_nlme_model(m49_6, "ppt", 6)
+m49_6_mAR1 <- AR1_nlme_model(m49_6, "ppt", 6)
+m49_5_mAR2 <- AR2_nlme_model(m49_6, "ppt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m49_6_mbase, m49_6_mAR1, m49_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m49_6_mbase)
+
+m49_6_coeffs <- summary(m49_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m49_6_plot <- plot_monthly_results(m49_6, ppt, m49_6_coeffs, "Met 49 - Five Points \nJune Precipitation", "Precipitation (mm)"))
+```
+
+
+### Met 50 - June:  
+
+```{r}
+by_month_lm(m, ppt, "50", "Met 50 - Deep Well \n Monthly Precipitation", "Precipitation (mm)")
+```
+
+
+```{r}
+m50_6 <- prepare_data_for_nlme(m, "50", "6")
+
+m50_6_mbase <- base_nlme_model(m50_6, "ppt", 6)
+m50_6_mAR1 <- AR1_nlme_model(m50_6, "ppt", 6)
+m50_5_mAR2 <- AR2_nlme_model(m50_6, "ppt", 6)
+```
+
+AICc scores:
+```{r}
+AICc(m50_6_mbase, m50_6_mAR1, m50_5_mAR2) %>% 
+  kbl() %>% 
+  kable_styling(full_width = FALSE, position = "left")
+```
+
+```{r}
+summary(m50_6_mbase)
+
+m50_6_coeffs <- summary(m50_6_mbase)$tTable[,c(1, 4)]
+```
+
+
+```{r}
+(m50_6_plot <- plot_monthly_results(m50_6, ppt, m50_6_coeffs, "Met 50 - Blue Grama \nJune Precipitation", "Precipitation (mm)"))
+```
+
+
+### Summary Plots of  Monthly Precipitation for June
+
+```{r}
+# ppt results 
+(ppt_6_graphs <- grid.arrange(m40_6_plot, m42_6_plot, m49_6_plot, m50_6_plot, ncol=2))
+```
+
+
+
 

@@ -44,7 +44,7 @@ m42 <- prepare_data_for_nlme(y, "42")
 m49 <- prepare_data_for_nlme(y, "49")
 m50 <- prepare_data_for_nlme(y, "50")
 
-
+mall <- rbind(m40, m42, m49, m50)
 
 
 # function for plotting preliminary yearly graph -----------------------------------------------------------
@@ -56,7 +56,7 @@ plot_yearly_prelim <- function(data, var, title, y_axis_label) {
   # y_axis_label = label for y-axis (in quotes)
   ggplot(data, aes(x = year, y = {{ var }}, col = sta)) +
     geom_line(color = "burlywood") +
-    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    geom_smooth(method = "lm", color = "black", size = 0.6, se = FALSE) +
     facet_wrap(~ sta) +
     labs(title = title,
          x = "Year",
@@ -73,11 +73,11 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
   # y_axis_label = label for y-axis (in quotes)
   ggplot(data, aes(x = year, y = {{ var }})) +
     geom_line(color = "burlywood") +
-    geom_smooth(method = "lm", color = "black", size = 0.6) +
+    geom_smooth(method = "lm", color = "black", size = 0.6, se = FALSE) +
     labs(title = title,
          x = "Year",
          y = y_axis_label,
-         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", coeffs[2,2], ")"))
+         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", round(coeffs[2,2], 4), ")"))
 }
 
 
@@ -128,6 +128,21 @@ AR2_nlme_model <- function(data, var) {
 }
 
 
+# all stations with interaction - sta is already a factor
+# base model function
+base_sta_int_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time*sta"))
+  
+  gls(model = model_specification,
+      data = data,
+      method = "ML",
+      na.action = na.omit)
+}
+
+
 # airt -------------------------------------------------------
 
 
@@ -142,7 +157,6 @@ plot_yearly_prelim(y, airt, "Annual Mean Air Temperature", "Temperature (C)")
 m40_mbase <- base_nlme_model(m40, "airt")
 m40_mAR1 <- AR1_nlme_model(m40, "airt")
 m40_mAR2 <- AR2_nlme_model(m40, "airt")
-  
 
 
 AICc(m40_mbase, m40_mAR1, m40_mAR2)
@@ -208,6 +222,22 @@ m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 # airt results 
 grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
+
+
+# base model with sta interaction
+mall_base_sta_int <- base_sta_int_nlme_model(mall, "airt")
+
+summary(mall_base_sta_int)
+summary(mall_base_sta_int)$tTable
+
+plot(mall_base_sta_int$fitted, mall_base_sta_int$residuals)
+
+mall_base_fit_resid <- tibble(fitted = mall_base_sta_int$fitted, 
+                              residual = mall_base_sta_int$residuals)
+
+mall_base_fit_resid %>% 
+  ggplot(aes(x = fitted, y = residual)) +
+  geom_point() 
 
 
 
@@ -289,7 +319,11 @@ grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
 
+# base model with sta interaction
+mall_base_sta_int <- base_sta_int_nlme_model(mall, "minair")
 
+summary(mall_base_sta_int)
+summary(mall_base_sta_int)$tTable
 
 
 
@@ -371,6 +405,13 @@ m50_coeffs <- summary(m50_mAR1)$tTable[,c(1, 4)]
 grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
 
 
+# base model with sta interaction
+mall_base_sta_int <- base_sta_int_nlme_model(mall, "maxair")
+
+summary(mall_base_sta_int)
+summary(mall_base_sta_int)$tTable
+
+
 
 
 
@@ -448,6 +489,13 @@ m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 # ppt results 
 grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+
+
+# base model with sta interaction
+mall_base_sta_int <- base_sta_int_nlme_model(mall, "ppt")
+
+summary(mall_base_sta_int)
+summary(mall_base_sta_int)$tTable
 
 
 
