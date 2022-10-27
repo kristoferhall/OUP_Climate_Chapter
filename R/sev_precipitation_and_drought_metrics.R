@@ -386,11 +386,97 @@ ggplot(cdd_yrly_extremes, aes(x = year, y = number_of_extreme_cdds, col = sta)) 
 
 
 
+# Define extreme wet and dry years ----------------------------------------------
+
+# Knapp et al. (2015) define the following:
+#  - extreme wet year - ppt > 90th %-ile
+#  - extreme dry year - ppt < 10th %-ile
+#  - average year - ppt > 45th and < 55th %-ile
+#
+# I am adding:
+#  - above average - >= 55th and <= 90th
+#  - below average - <= 45th and >= 10th
+
+
+wet_dry_years <- met_annual_ppt %>% 
+  group_by(sta) %>% 
+  summarize(extreme_wet = quantile(ppt, .9),
+            extreme_dry = quantile(ppt, .1),
+            avg_lo = quantile(ppt, .45),
+            avg_hi = quantile(ppt, .55))
+
+
+# df$rating <- ifelse(df$team == 'A', 'great',
+#                     ifelse(df$team == 'B', 'OK', 'bad'))
+met_annual_ppt_classified <- met_annual_ppt %>% 
+  left_join(wet_dry_years) %>% 
+  mutate(year_type = ifelse(ppt > extreme_wet, 'extreme_wet',
+                            ifelse(ppt < extreme_dry, 'extreme_dry',
+                                   ifelse((ppt > avg_lo) & (ppt < avg_hi), 'average',
+                                          ifelse((ppt >= extreme_dry) & (ppt <= avg_lo), 'below_average', 'above_average'))))) %>%
+  left_join(events_per_year) %>% 
+  left_join(cdd_yrly_mean) %>% 
+  left_join(cdd_yrly_extremes) 
+
+
+
+# met 40 as an initial look 
+met_annual_ppt_classified %>% 
+  filter(sta == '40' & year_type %in% c("extreme_wet", "average", "extreme_dry")) %>% 
+  ggplot(aes(x = year, y = number_of_extreme_cdds)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ year_type)
+
+
+met_annual_ppt_classified %>% 
+  filter(sta == '40' & year_type %in% c("extreme_wet", "average", "extreme_dry")) %>% 
+  ggplot(aes(x = year, y = CDD_mean)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ year_type)
+
+met_annual_ppt_classified %>% 
+  filter(sta == '40' & year_type %in% c("extreme_wet", "average", "extreme_dry")) %>% 
+  ggplot(aes(x = year, y = number_of_extreme_events)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ year_type)
+
+met_annual_ppt_classified %>% 
+  filter(sta == '40' & year_type %in% c("extreme_wet", "average", "extreme_dry")) %>% 
+  ggplot(aes(x = year, y = number_of_events)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ year_type)
 
 
 
 
 
+met_annual_ppt_classified %>% 
+  ggplot(aes(x = year, y = CDD_mean, col = year_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  facet_wrap(~ sta)
+
+met_annual_ppt_classified %>% 
+  ggplot(aes(x = year, y = number_of_extreme_cdds, col = year_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  facet_wrap(~ sta)
+
+met_annual_ppt_classified %>% 
+  ggplot(aes(x = year, y = number_of_events, col = year_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  facet_wrap(~ sta)
+
+met_annual_ppt_classified %>% 
+  ggplot(aes(x = year, y = number_of_extreme_events, col = year_type)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  facet_wrap(~ sta)
 
 
 
