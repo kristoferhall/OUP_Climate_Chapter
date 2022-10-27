@@ -271,6 +271,132 @@ events_per_month %>%
 
 
 
+# Calculate Consecutive Dry Days ------------------------------------------------
+
+# Knapp et al. (2015) define the following:
+#  - Consecutive Dry Days (CDD) = the average number of days in the dry period
+#       between precipitation events
+#  - Extreme CDDs = the number of dry periods that exceeded in length (in days) 
+#       the 95th %-ile of all dry periods in the historic record.
+
+
+
+# I generally think this approach is pretty decent. It has 2 small flaws (that I know of):
+#  1. It misses 0 ppt days at the beginning of the record up until the first
+#     event at the start of the data. e.g. - if the first event is on Jan. 15 at the beginning, 
+#     it misses a CDD event of 14 days. This is only an issue at the start, and is quite minor.
+#  2. It doesn't take into account transitions between years. Therefore, you have
+#     to classify a CDD event that spans years into the year of the event start or end.
+
+
+cdd <- met %>%
+  select(sta, date, ppt) %>%
+  group_by(sta) %>% 
+  filter(ppt >= threshold) %>%
+  mutate(prev_date = lag(date, n=1)) %>%
+  drop_na() %>%
+  mutate(cdd = as.numeric(date - prev_date) - 1,
+         year = year(date),
+         start_date = prev_date + 1,
+         end_date = date) 
+# I don't totally like having the 0 CDDs, but they can also be useful because
+# they allow you to see continuous precipitation event days. Not sure whether
+# to leave them in or not for calculating %-iles.
+
+
+cdd %>% 
+  ggplot(aes(x = end_date, y = cdd, color = sta)) +
+  geom_point(size = 0.5) +
+  facet_wrap(~ sta) +
+  labs(title = "Consecutive Dry Days (CDD) without Precipitation",
+       x = "Date for End of CDD",
+       y = "CDDs")
+
+cdd %>% 
+  ggplot(aes(x = cdd, fill = sta)) +
+  geom_histogram() +
+  facet_wrap(~ sta)
+
+
+
+
+
+# annual mean CDD length
+cdd_yrly_mean <- cdd %>% 
+  group_by(sta, year) %>% 
+  summarize(CDD_mean = mean(cdd)) %>% 
+  ungroup()
+
+cdd_yrly_mean %>% 
+  ggplot(aes(x = year, y = CDD_mean, col = sta)) +
+  geom_line(size = 0.5) +
+  facet_wrap(~ sta) +
+  labs(title = "Annual Average Length of Consecutive Dry Days",
+       x = "Year",
+       y = "Mean CDD Length")
+
+# not as easy to calculate about monthly CDDs because of how often they might span months...
+
+# this is a crude monthly CDD length - using end date to classify into a month
+cdd_mthly_mean <- cdd %>% 
+  mutate(month_date = ymd(paste0(year(end_date), "-", month(end_date), "-01"))) %>% 
+  group_by(sta, month_date) %>% 
+  summarize(CDD_mean = mean(cdd)) %>% 
+  ungroup()
+
+cdd_mthly_mean %>% 
+  mutate(month = month(month_date)) %>% 
+  ggplot(aes(x = month_date, y = CDD_mean, col = sta)) +
+  geom_line() +
+  facet_wrap(~ month)
+# this doesn't really work, because it can pick up long periods that span more than
+# a month
+#
+# TODO: Look at how to handle this - like a month start and month end and
+#     then whether cdd start and end dates span it. But that doesn't get at the 
+#     whole picture very well...
+
+
+# mean and 95th %-ile CDD length over entire time span
+cdd_mean <- cdd %>% 
+  group_by(sta) %>% 
+  summarize(CDD_mean = mean(cdd),
+            CDD_95   = quantile(cdd, 0.95))
+
+
+# add extreme cdd flag to cdd
+cdd <- cdd %>% 
+  left_join(cdd_mean) %>% 
+  mutate(is_extreme_cdd = ifelse(cdd > CDD_95, TRUE, FALSE))
+
+
+# cdd extremes by year
+cdd_yrly_extremes <- cdd %>% 
+  group_by(sta, year) %>% 
+  summarize(number_of_extreme_cdds = sum(is_extreme_cdd))
+
+ggplot(cdd_yrly_extremes, aes(x = year, y = number_of_extreme_cdds, col = sta)) +
+  geom_line(size = 0.5) +
+  facet_wrap(~ sta) +
+  labs(title = "Number of Annual Extreme Consecutive Dry Day Periods",
+       x = "Year",
+       y = "Number of Extreme CDDs")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
