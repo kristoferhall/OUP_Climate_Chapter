@@ -299,9 +299,7 @@ cdd <- met %>%
          year = year(date),
          start_date = prev_date + 1,
          end_date = date) 
-# I don't totally like having the 0 CDDs, but they can also be useful because
-# they allow you to see continuous precipitation event days. Not sure whether
-# to leave them in or not for calculating %-iles.
+
 
 
 cdd %>% 
@@ -316,7 +314,7 @@ cdd %>%
   ggplot(aes(x = cdd, fill = sta)) +
   geom_histogram() +
   facet_wrap(~ sta)
-
+# highly right skewed
 
 
 
@@ -406,8 +404,7 @@ wet_dry_years <- met_annual_ppt %>%
             avg_hi = quantile(ppt, .55))
 
 
-# df$rating <- ifelse(df$team == 'A', 'great',
-#                     ifelse(df$team == 'B', 'OK', 'bad'))
+
 met_annual_ppt_classified <- met_annual_ppt %>% 
   left_join(wet_dry_years) %>% 
   mutate(year_type = ifelse(ppt > extreme_wet, 'extreme_wet',
