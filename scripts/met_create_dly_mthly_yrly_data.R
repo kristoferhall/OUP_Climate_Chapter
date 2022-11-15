@@ -56,7 +56,7 @@ met_m <- met_d %>%
   mutate(month = month(date),
          year = year(date),
          date = ymd(paste0(year, "-", month, "-01"))) %>%        # need to do this because date is missing for missing records
-  group_by(sta, month, year, date) %>% 
+  group_by(sta, year, month, date) %>% 
   summarize(airt = mean(airt, na.rm = TRUE),
             maxair = max(maxair, na.rm = TRUE), 
             minair = min(minair, na.rm = TRUE),

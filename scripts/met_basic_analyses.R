@@ -402,7 +402,7 @@ m %>%
   geom_boxplot() +
   labs(title = "Monthly Total Precipitation by Station \n(months combined)",
        x = "Station",
-       y = "Relative Humidity (%)")  +
+       y = "Precipitation (mm)")  +
   theme(legend.position="none")
 
 m %>% 
@@ -410,7 +410,7 @@ m %>%
   geom_boxplot() +
   labs(title = "Monthly Total Precipitation by month",
        x = "Station",
-       y = "Precip (mm)") +
+       y = "Precipitation (mm)") +
   facet_wrap(~ month(date)) +
   theme(legend.position="none")
 
@@ -485,7 +485,8 @@ by_month_lm <- function(data, var, station, title) {
     geom_line() +
     geom_smooth(method = "lm") +
     facet_wrap(~ month, scales = "free_y") +
-    ggtitle({{ title }})
+    ggtitle({{ title }}) +
+    labs(subtitle = "Y-axis is free")
 }
 
 by_month_lm(m, airt, "40", "Station 40 Monthly Mean Air Temperature (C)")

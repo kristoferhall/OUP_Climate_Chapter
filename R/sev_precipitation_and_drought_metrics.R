@@ -230,6 +230,7 @@ events_per_month %>%
 events_per_year %>% 
   ggplot(aes(x = year, y = number_of_events, color = sta)) +
   geom_line(size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.6) +
   facet_wrap(~ sta) +
   labs(title = "Number of Annual Precipitation Events",
        x = "Year",
@@ -239,6 +240,7 @@ events_per_year %>%
 events_per_year %>% 
   ggplot(aes(x = year, y = number_of_extreme_events, color = sta)) +
   geom_line(size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.6) +
   facet_wrap(~ sta) +
   labs(title = "Number of EXTREME Annual Precipitation Events",
        x = "Date",
@@ -252,6 +254,7 @@ events_per_month %>%
   mutate(month = month(month_date)) %>% 
   ggplot(aes(x = month_date, y = number_of_events, color = sta)) +
   geom_line(size = 0.2) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.2) +
   facet_wrap(~ month) +
   labs(title = "Number of Precipitation Events by Month",
        x = "Year",
@@ -328,6 +331,7 @@ cdd_yrly_mean <- cdd %>%
 cdd_yrly_mean %>% 
   ggplot(aes(x = year, y = CDD_mean, col = sta)) +
   geom_line(size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.4) +
   facet_wrap(~ sta) +
   labs(title = "Annual Average Length of Consecutive Dry Days",
        x = "Year",
@@ -478,9 +482,41 @@ met_annual_ppt_classified %>%
 
 
 
+met_annual_ppt_classified %>% 
+  mutate(decade = ifelse(year < 2000, "1990-1999",
+                         ifelse(year >= 2000 & year < 2010, "2000-2009", 
+                                ifelse(year >= 2010 & year < 2020, "2010-2019", "2020-2021")))) %>% 
+  ggplot() +
+  geom_bar(aes(decade, fill = year_type)) +
+  facet_wrap(~ sta)
+
+met_annual_ppt_classified %>% 
+  mutate(year_type_factor = factor(year_type,
+                                      levels = c("extreme_dry",
+                                                 "below_average",
+                                                 "average",
+                                                 "above_average",
+                                                 "extreme_wet"))) %>% 
+  mutate(decade = ifelse(year < 2000, "1990-1999",
+                         ifelse(year >= 2000 & year < 2010, "2000-2009", 
+                                ifelse(year >= 2010 & year < 2020, "2010-2019", "2020-2021")))) %>% 
+  ggplot() +
+  geom_bar(aes(decade, fill = year_type_factor)) +
+  facet_wrap(~ sta) +
+  labs(x = "Period",
+       y = "Count")
 
 
-
+met_annual_ppt_classified %>% 
+  mutate(year_type_factor = factor(ifelse(year_type == "extreme_dry", 0,
+                                          ifelse(year_type == "below_average", 1,
+                                                 ifelse(year_type == "average", 2,
+                                                        ifelse(year_type == "above_average", 3, 4)))))) %>%
+  ggplot(aes(x = year, y = year_type_factor, color = year_type)) +
+  geom_point() +
+  facet_wrap(~ sta) +
+  labs(x = "Period",
+       y = "Count")
 
 
 
