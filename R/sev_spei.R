@@ -6,7 +6,8 @@
 library(tidyverse)
 library(lubridate)
 library(SPEI)
-
+library(nlme)
+library(gridExtra)
 
 
 # load monthly met data ----------------------------
@@ -154,7 +155,7 @@ basic_plot_by_sta(met_spei, spei_6, "spei_6")
 
 # by month of year
 met_spei %>% 
-  ggplot(aes(x = year, y = spei_6, color = sta)) +
+  ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line(alpha = 0.6) +
   geom_smooth(method = "lm", size = 0.3, se = FALSE) +
   facet_wrap(~ month) +
@@ -166,7 +167,7 @@ met_spei %>%
 
 met_spei %>% 
   filter(sta == "40") %>% 
-  ggplot(aes(x = year, y = spei_6, color = sta)) +
+  ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
   geom_smooth(method = "lm", size = 0.3, se = FALSE) +
   facet_wrap(~ month) +
@@ -176,7 +177,7 @@ met_spei %>%
 
 met_spei %>% 
   filter(sta == "42") %>% 
-  ggplot(aes(x = year, y = spei_6, color = sta)) +
+  ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
   geom_smooth(method = "lm", size = 0.3, se = FALSE) +
   facet_wrap(~ month) +
@@ -186,7 +187,7 @@ met_spei %>%
 
 met_spei %>% 
   filter(sta == "49") %>% 
-  ggplot(aes(x = year, y = spei_6, color = sta)) +
+  ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
   geom_smooth(method = "lm", size = 0.3, se = FALSE) +
   facet_wrap(~ month) +
@@ -196,13 +197,104 @@ met_spei %>%
 
 met_spei %>% 
   filter(sta == "50") %>% 
-  ggplot(aes(x = year, y = spei_6, color = sta)) +
+  ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
   geom_smooth(method = "lm", size = 0.3, se = FALSE) +
   facet_wrap(~ month) +
   scale_color_viridis_d() +
   theme_minimal() +
   labs(title = "Station 50 SPEI 6-month integration by month of year")
+
+
+
+
+
+
+# run basic linear model
+
+# base model function
+base_nlme_model <- function(data, var) {
+  # data = dataframe
+  # var = var to model
+  
+  model_specification = as.formula(paste0(var, " ~ time"))
+  
+  gls(model = model_specification,
+      data = data,
+      method = "ML",
+      na.action = na.omit)
+}
+
+# function for plotting graphs with best nlme model results ------------------------------------------------
+
+plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
+  # data = dataset
+  # var = variable (not in quotes)
+  # coeffs = object containing coefficients and p-values of best model
+  # title = title for graph (in quotes)
+  # y_axis_label = label for y-axis (in quotes)
+  ggplot(data, aes(x = date, y = {{ var }})) +
+    geom_hline(yintercept = 0, size = 0.2, color = "black") +
+    geom_line(color = "burlywood") +
+    geom_smooth(method = "lm", color = "brown", size = 0.4, se = FALSE) +
+    geom_smooth(method = "loess", color = "grey", size = 0.4, se = FALSE) +
+    labs(title = title,
+         x = "Year",
+         y = y_axis_label,
+         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", round(coeffs[2,2], 4), ")")) +
+    theme_minimal() 
+}
+
+m40_bm <- met_spei %>% 
+  filter(sta == "40" & !is.na(spei_6)) %>%
+  mutate(time = as.numeric(as.factor(year))) %>% 
+  base_nlme_model(., var = "spei_6")
+
+summary(m40_bm)
+m40_coeffs <- summary(m40_bm)$tTable[,c(1, 4)]
+
+(m40_plot <- plot_yearly_results(met_spei %>% filter(sta == "40"), spei_6, m40_coeffs, "Met 40 - SPEI - 6-month Integration", "SPEI"))
+
+
+m42_bm <- met_spei %>% 
+  filter(sta == "42") %>% 
+  mutate(time = as.numeric(as.factor(year))) %>% 
+  base_nlme_model(., var = "spei_6")
+
+summary(m42_bm)
+m42_coeffs <- summary(m42_bm)$tTable[,c(1, 4)]
+
+(m42_plot <- plot_yearly_results(met_spei %>% filter(sta == "42"), spei_6, m42_coeffs, "Met 42 - SPEI - 6-month Integration", "SPEI"))
+
+
+m49_bm <- met_spei %>% 
+  filter(sta == "49") %>% 
+  mutate(time = as.numeric(as.factor(year))) %>% 
+  base_nlme_model(., var = "spei_6")
+
+summary(m49_bm)
+m49_coeffs <- summary(m49_bm)$tTable[,c(1, 4)]
+
+(m49_plot <- plot_yearly_results(met_spei %>% filter(sta == "49"), spei_6, m49_coeffs, "Met 49 - SPEI - 6-month Integration", "SPEI"))
+
+
+m50_bm <- met_spei %>% 
+  filter(sta == "50") %>% 
+  mutate(time = as.numeric(as.factor(year))) %>% 
+  base_nlme_model(., var = "spei_6")
+
+summary(m50_bm)
+m50_coeffs <- summary(m50_bm)$tTable[,c(1, 4)]
+
+(m50_plot <- plot_yearly_results(met_spei %>% filter(sta == "50"), spei_6, m50_coeffs, "Met 50 - SPEI - 6-month Integration", "SPEI"))
+
+
+grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+
+
+
+
+
 
 
 
