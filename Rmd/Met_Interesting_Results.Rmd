@@ -1,0 +1,93 @@
+---
+title: "Met Interesting Results"
+author: "KM Hall"
+date: "2022-11-15"
+output: html_document
+---
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+```
+
+# Temperatures is increasing, Precipitation is not  
+
+
+### Annual Mean Air Temperature  
+
+![](../figures/Annual_Mean_Temp_all_stations.jpg)
+
+### Annual Mean Precipitation  
+
+![](../figures/Annual_Mean_Precip_all_stations.jpg)
+
+### Annual Mean Vapor Pressure Deficit  
+
+![](../figures/Annual_Mean_VPD_all_stations.jpg)
+
+### SPEI 6-month Integration  
+
+![](../figures/SPEI_6_all_stations.jpg)  
+
+------  
+
+
+
+
+# Monthly VPD and SPEI  
+
+
+### Met 40  
+
+![](../figures/m40_bymonth_vpd.jpg)
+
+
+![](../figures/m40_bymonth_spei6.jpg)
+
+
+
+### Met 42   
+
+![](../figures/m42_bymonth_vpd.jpg)
+
+![](../figures/m42_bymonth_spei6.jpg)
+
+### Met 49   
+
+![](../figures/m49_bymonth_vpd.jpg)
+
+![](../figures/m49_bymonth_spei6.jpg)
+
+### Met 50  
+
+![](../figures/m50_bymonth_vpd.jpg)
+
+![](../figures/m50_bymonth_spei6.jpg)
+
+
+
+----  
+
+
+
+# Wet/Dry Year Type as defined by Knapp et al. (2015)  
+
+![](../figures/ppt_year_type_barplot.jpg)
+
+![](../figures/ppt_year_type_ts.jpg)
+
+
+----  
+
+
+
+# Consecutive Dry Days and Precipitation Events  
+
+
+![](../figures/met_cdd_annual_mean.jpg)
+
+![](../figures/met_cdd_extremes.jpg)
+
+![](../figures/met_ppt_events.jpg)
+
+![](../figures/met_extreme_ppt_events.jpg)
+

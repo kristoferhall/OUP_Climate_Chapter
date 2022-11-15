@@ -72,7 +72,7 @@ summary(met_h)
 # source: http://cronklab.wikidot.com/calculation-of-vapour-pressure-deficit
 met_h_vpd <- met_h %>% 
   mutate(vp_sat = 610.7 * 10^((7.5 * airt)/(237.3 + airt)),
-         vpd = (1-(rh/100)) * vp_sat) %>% 
+         vpd = (1-(rh/100)) * vp_sat / 1000) %>% 
   select(sta:airt, rh, vp_sat:vpd)
 
 
@@ -114,7 +114,12 @@ met_y_vpd %>%
   ggplot(aes(x = year, y = vpd, color = sta)) +
   geom_smooth(method = 'lm', se = FALSE, size = 0.6) +
   geom_line() +
-  facet_wrap(~ sta)
+  facet_wrap(~ sta) +
+  scale_color_viridis_d(option = "cividis") +
+  labs(title = "Annual Mean Vapor Pressure",
+       x = "Year",
+       y = "VPD (kPa)") +
+  theme_minimal()
 
 
 
@@ -130,7 +135,8 @@ by_month_lm <- function(data, var, station, title) {
     geom_smooth(method = loess, se = FALSE, size = 0.5) +
     facet_wrap(~ month, scales = "free_y") +
     ggtitle({{ title }}) +
-    labs(subtitle = "Y-axis is free")
+    labs(subtitle = "Y-axis is free") +
+    theme_minimal()
 }
 
 
@@ -139,10 +145,40 @@ met_m_vpd <- met_m_vpd %>%
          month = month(month_date))
   
 
-by_month_lm(met_m_vpd, vpd, "40", "Station 40 Monthly Mean Vapor Pressure Deficit (Pa)")
-by_month_lm(met_m_vpd, vpd, "42", "Station 42 Monthly Mean Vapor Pressure Deficit (Pa)")
-by_month_lm(met_m_vpd, vpd, "49", "Station 49 Monthly Mean Vapor Pressure Deficit (Pa)")
-by_month_lm(met_m_vpd, vpd, "50", "Station 50 Monthly Mean Vapor Pressure Deficit (Pa)")
+(m40_m_vpd <- by_month_lm(met_m_vpd, vpd, "40", "Station 40 Monthly Mean Vapor Pressure Deficit (kPa)"))
+(m42_m_vpd <- by_month_lm(met_m_vpd, vpd, "42", "Station 42 Monthly Mean Vapor Pressure Deficit (kPa)"))
+(m49_m_vpd <- by_month_lm(met_m_vpd, vpd, "49", "Station 49 Monthly Mean Vapor Pressure Deficit (kPa)"))
+(m50_m_vpd <- by_month_lm(met_m_vpd, vpd, "50", "Station 50 Monthly Mean Vapor Pressure Deficit (kPa)"))
+
+
+# saves previous graph
+ggsave(filename = paste0("figures/m40_bymonth_vpd", ".jpg"),
+       plot = m40_m_vpd,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+# saves previous graph
+ggsave(filename = paste0("figures/m42_bymonth_vpd", ".jpg"),
+       plot = m42_m_vpd,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+# saves previous graph
+ggsave(filename = paste0("figures/m49_bymonth_vpd", ".jpg"),
+       plot = m49_m_vpd,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+# saves previous graph
+ggsave(filename = paste0("figures/m50_bymonth_vpd", ".jpg"),
+       plot = m50_m_vpd,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
 
 
 
@@ -189,7 +225,7 @@ m40_bm <- met_y_vpd %>%
 summary(m40_bm)
 m40_coeffs <- summary(m40_bm)$tTable[,c(1, 4)]
 
-(m40_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "40"), vpd, m40_coeffs, "Met 40 - Annual Mean Vapor Pressure Deficit (Pa)", "VPD (Pa)"))
+(m40_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "40"), vpd, m40_coeffs, "Met 40 - Annual Mean VPD", "VPD (kPa)"))
 
 
 m42_bm <- met_y_vpd %>% 
@@ -200,7 +236,7 @@ m42_bm <- met_y_vpd %>%
 summary(m42_bm)
 m42_coeffs <- summary(m42_bm)$tTable[,c(1, 4)]
 
-(m42_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "42"), vpd, m42_coeffs, "Met 42 - Annual Mean Vapor Pressure Deficit (Pa)", "VPD (Pa)"))
+(m42_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "42"), vpd, m42_coeffs, "Met 42 - Annual Mean VPD", "VPD (kPa)"))
 
 
 m49_bm <- met_y_vpd %>% 
@@ -211,7 +247,7 @@ m49_bm <- met_y_vpd %>%
 summary(m49_bm)
 m49_coeffs <- summary(m49_bm)$tTable[,c(1, 4)]
 
-(m49_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "49"), vpd, m49_coeffs, "Met 49 - Annual Mean Vapor Pressure Deficit (Pa)", "VPD (Pa)"))
+(m49_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "49"), vpd, m49_coeffs, "Met 49 - Annual Mean VPD", "VPD (kPa)"))
 
 
 m50_bm <- met_y_vpd %>% 
@@ -222,10 +258,17 @@ m50_bm <- met_y_vpd %>%
 summary(m50_bm)
 m50_coeffs <- summary(m50_bm)$tTable[,c(1, 4)]
 
-(m50_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "50"), vpd, m50_coeffs, "Met 50 - Annual Mean Vapor Pressure Deficit (Pa)", "VPD (Pa)"))
+(m50_plot <- plot_yearly_results(met_y_vpd %>% filter(sta == "50"), vpd, m50_coeffs, "Met 50 - Annual Mean VPD", "VPD (kPa)"))
 
   
-grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+(m_annual_vpd <- grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2))
 
-  
+
+
+# saves previous graph
+ggsave(filename = paste0("figures/Annual_Mean_VPD_all_stations", ".jpg"),
+       plot = m_annual_vpd,
+       dpi = 300,
+       width = 10,
+       height = 4)
   

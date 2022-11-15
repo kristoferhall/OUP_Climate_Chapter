@@ -455,29 +455,77 @@ met_annual_ppt_classified %>%
 
 
 
-met_annual_ppt_classified %>% 
+(met_cdd_mean <- met_annual_ppt_classified %>% 
   ggplot(aes(x = year, y = CDD_mean, col = year_type)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, size = 0.5) +
-  facet_wrap(~ sta)
+  facet_wrap(~ sta) +
+  labs(x = "Year",
+       y = "Count",
+       title = "Average CDDs") +
+  scale_fill_viridis_d() +
+  theme_minimal())
 
-met_annual_ppt_classified %>% 
+(met_extreme_cdds <- met_annual_ppt_classified %>% 
   ggplot(aes(x = year, y = number_of_extreme_cdds, col = year_type)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, size = 0.5) +
-  facet_wrap(~ sta)
+  facet_wrap(~ sta) +
+  labs(x = "Year",
+       y = "Count",
+       title = "Number of Extreme CDDs") +
+  scale_fill_viridis_d() +
+  theme_minimal())
 
-met_annual_ppt_classified %>% 
+(met_ppt_events <- met_annual_ppt_classified %>% 
   ggplot(aes(x = year, y = number_of_events, col = year_type)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, size = 0.5) +
-  facet_wrap(~ sta)
+  facet_wrap(~ sta) +
+  labs(x = "Year",
+       y = "Count",
+       title = "Number of Precipitation Events") +
+  scale_fill_viridis_d() +
+  theme_minimal())
 
-met_annual_ppt_classified %>% 
+(met_extreme_ppt_events <- met_annual_ppt_classified %>% 
   ggplot(aes(x = year, y = number_of_extreme_events, col = year_type)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, size = 0.5) +
-  facet_wrap(~ sta)
+  facet_wrap(~ sta) +
+  labs(x = "Year",
+       y = "Count",
+       title = "Number of Extreme Precipitation Events") +
+  scale_fill_viridis_d() +
+  theme_minimal())
+
+
+# saves previous graphs
+ggsave(filename = paste0("figures/met_cdd_annual_mean", ".jpg"),
+       plot = met_cdd_mean,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/met_cdd_extremes", ".jpg"),
+       plot = met_extreme_cdds,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/met_ppt_events", ".jpg"),
+       plot = met_ppt_events,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/met_extreme_ppt_events", ".jpg"),
+       plot = met_extreme_ppt_events,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+
 
 
 
@@ -490,7 +538,9 @@ met_annual_ppt_classified %>%
   geom_bar(aes(decade, fill = year_type)) +
   facet_wrap(~ sta)
 
-met_annual_ppt_classified %>% 
+
+
+(met_ppt_year_type_barplot <- met_annual_ppt_classified %>% 
   mutate(year_type_factor = factor(year_type,
                                       levels = c("extreme_dry",
                                                  "below_average",
@@ -504,20 +554,42 @@ met_annual_ppt_classified %>%
   geom_bar(aes(decade, fill = year_type_factor)) +
   facet_wrap(~ sta) +
   labs(x = "Period",
-       y = "Count")
+       y = "Count",
+       title = "Precipitation Year Type") +
+  scale_fill_viridis_d() +
+  theme_minimal())
 
 
-met_annual_ppt_classified %>% 
+(met_ppt_year_type_ts <- met_annual_ppt_classified %>% 
   mutate(year_type_factor = factor(ifelse(year_type == "extreme_dry", 0,
                                           ifelse(year_type == "below_average", 1,
                                                  ifelse(year_type == "average", 2,
                                                         ifelse(year_type == "above_average", 3, 4)))))) %>%
   ggplot(aes(x = year, y = year_type_factor, color = year_type)) +
   geom_point() +
+  geom_line(size = 0.3) +
   facet_wrap(~ sta) +
   labs(x = "Period",
-       y = "Count")
+       y = "Count") +
+  scale_color_viridis_d() +
+  theme_minimal() +
+  labs(title = "Precipitation Year Type"))
 
+
+
+# saves previous graphs
+ggsave(filename = paste0("figures/ppt_year_type_barplot", ".jpg"),
+       plot = met_ppt_year_type_barplot,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+
+ggsave(filename = paste0("figures/ppt_year_type_ts", ".jpg"),
+       plot = met_ppt_year_type_ts,
+       dpi = 300,
+       width = 10,
+       height = 4)
 
 
 

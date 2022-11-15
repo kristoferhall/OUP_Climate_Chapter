@@ -165,7 +165,7 @@ met_spei %>%
 
 
 
-met_spei %>% 
+(m40_bymonth_spei6 <- met_spei %>% 
   filter(sta == "40") %>% 
   ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
@@ -173,9 +173,9 @@ met_spei %>%
   facet_wrap(~ month) +
   scale_color_viridis_d() +
   theme_minimal() +
-  labs(title = "Station 40 SPEI 6-month integration by month of year")
+  labs(title = "Station 40 SPEI 6-month integration by month of year"))
 
-met_spei %>% 
+(m42_bymonth_spei6 <- met_spei %>% 
   filter(sta == "42") %>% 
   ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
@@ -183,9 +183,9 @@ met_spei %>%
   facet_wrap(~ month) +
   scale_color_viridis_d() +
   theme_minimal() +
-  labs(title = "Station 42 SPEI 6-month integration by month of year")
+  labs(title = "Station 42 SPEI 6-month integration by month of year"))
 
-met_spei %>% 
+(m49_bymonth_spei6 <- met_spei %>% 
   filter(sta == "49") %>% 
   ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
@@ -193,9 +193,9 @@ met_spei %>%
   facet_wrap(~ month) +
   scale_color_viridis_d() +
   theme_minimal() +
-  labs(title = "Station 49 SPEI 6-month integration by month of year")
+  labs(title = "Station 49 SPEI 6-month integration by month of year"))
 
-met_spei %>% 
+(m50_bymonth_spei6 <- met_spei %>% 
   filter(sta == "50") %>% 
   ggplot(aes(x = date, y = spei_6, color = sta)) +
   geom_line() +
@@ -203,9 +203,33 @@ met_spei %>%
   facet_wrap(~ month) +
   scale_color_viridis_d() +
   theme_minimal() +
-  labs(title = "Station 50 SPEI 6-month integration by month of year")
+  labs(title = "Station 50 SPEI 6-month integration by month of year"))
 
 
+# saves previous graphs
+ggsave(filename = paste0("figures/m40_bymonth_spei6", ".jpg"),
+       plot = m40_bymonth_spei6,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/m42_bymonth_spei6", ".jpg"),
+       plot = m42_bymonth_spei6,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/m49_bymonth_spei6", ".jpg"),
+       plot = m49_bymonth_spei6,
+       dpi = 300,
+       width = 10,
+       height = 4)
+
+ggsave(filename = paste0("figures/m50_bymonth_spei6", ".jpg"),
+       plot = m50_bymonth_spei6,
+       dpi = 300,
+       width = 10,
+       height = 4)
 
 
 
@@ -235,6 +259,7 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
   # y_axis_label = label for y-axis (in quotes)
   ggplot(data, aes(x = date, y = {{ var }})) +
     geom_hline(yintercept = 0, size = 0.2, color = "black") +
+    geom_segment(aes(x = date, y = 0, xend = date, yend = spei_6), color = "lightgrey") +
     geom_line(color = "burlywood") +
     geom_smooth(method = "lm", color = "brown", size = 0.4, se = FALSE) +
     geom_smooth(method = "loess", color = "grey", size = 0.4, se = FALSE) +
@@ -289,7 +314,14 @@ m50_coeffs <- summary(m50_bm)$tTable[,c(1, 4)]
 (m50_plot <- plot_yearly_results(met_spei %>% filter(sta == "50"), spei_6, m50_coeffs, "Met 50 - SPEI - 6-month Integration", "SPEI"))
 
 
-grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+(m_spei_6 <- grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2))
+
+# saves previous graph
+# ggsave(filename = paste0("figures/SPEI_6_all_stations", ".jpg"),
+#        plot = m_spei_6,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
 
 
 

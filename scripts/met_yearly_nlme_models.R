@@ -220,8 +220,15 @@ m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 
 # airt results 
-grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+(m_airt <- grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2, nrow=2))
 
+
+# # saves previous graph
+# ggsave(filename = paste0("figures/Annual_Mean_Temp_all_stations", ".jpg"),
+#        plot = m_airt,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
 
 
 # base model with sta interaction
@@ -488,7 +495,15 @@ m50_coeffs <- summary(m50_mbase)$tTable[,c(1, 4)]
 
 
 # ppt results 
-grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2)
+(m_ppt <- grid.arrange(m40_plot, m42_plot, m49_plot, m50_plot, ncol=2))
+
+# # saves previous graph
+# ggsave(filename = paste0("figures/Annual_Mean_Precip_all_stations", ".jpg"),
+#        plot = m_ppt,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+
 
 
 # base model with sta interaction
