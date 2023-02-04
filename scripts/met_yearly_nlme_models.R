@@ -11,7 +11,8 @@ library(lubridate)
 library(nlme)
 library(MuMIn)
 library(gridExtra)
-
+library(car)
+library(emmeans)
 
 # Load yearly data ---------------------------------------------
 
@@ -236,6 +237,9 @@ mall_base_sta_int <- base_sta_int_nlme_model(mall, "airt")
 
 summary(mall_base_sta_int)
 summary(mall_base_sta_int)$tTable
+
+
+anova(mall_base_sta_int)
 
 plot(mall_base_sta_int$fitted, mall_base_sta_int$residuals)
 
@@ -511,6 +515,8 @@ mall_base_sta_int <- base_sta_int_nlme_model(mall, "ppt")
 
 summary(mall_base_sta_int)
 summary(mall_base_sta_int)$tTable
+
+anova(mall_base_sta_int)
 
 
 

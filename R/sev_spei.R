@@ -120,7 +120,7 @@ basic_plot_by_sta(met_spei, spei_1, "spei_1")
 
 
 met_spei %>% 
-  filter(date >= "2014-01-01") %>% 
+  filter(month(date) == "9") %>% 
   ggplot(aes(x = date, y = spei_12, color = sta)) +
   geom_line() +
   facet_wrap(~ sta) +
@@ -231,6 +231,60 @@ ggsave(filename = paste0("figures/m50_bymonth_spei6", ".jpg"),
        width = 10,
        height = 4)
 
+
+
+
+
+
+(m40_bymonth_spei6 <- met_spei %>% 
+    filter(sta == "40" & month(date) == 9) %>% 
+    ggplot(aes(x = date, y = spei_12, color = sta)) +
+    geom_line() +
+    geom_smooth(method = "lm", size = 0.3, se = FALSE) +
+    scale_color_viridis_d() +
+    theme_minimal() +
+    labs(title = "Station 40 September SPEI (12-month integration)"))
+
+(m42_bymonth_spei6 <- met_spei %>% 
+    filter(sta == "42" & month(date) == 9) %>% 
+    ggplot(aes(x = date, y = spei_12, color = sta)) +
+    geom_line() +
+    geom_smooth(method = "lm", size = 0.3, se = FALSE) +
+    facet_wrap(~ month) +
+    scale_color_viridis_d() +
+    theme_minimal() +
+    labs(title = "Station 42 September SPEI (12-month integration)"))
+
+(m49_bymonth_spei6 <- met_spei %>% 
+    filter(sta == "49" & month(date) == 9) %>% 
+    ggplot(aes(x = date, y = spei_12, color = sta)) +
+    geom_line() +
+    geom_smooth(method = "lm", size = 0.3, se = FALSE) +
+    facet_wrap(~ month) +
+    scale_color_viridis_d() +
+    theme_minimal() +
+    labs(title = "Station 49 september SPEI (12-month integration)"))
+
+(m50_bymonth_spei6 <- met_spei %>% 
+    filter(sta == "50" & month(date) == 9) %>% 
+    ggplot(aes(x = date, y = spei_12, color = sta)) +
+    geom_line() +
+    geom_smooth(method = "lm", size = 0.3, se = FALSE) +
+    facet_wrap(~ month) +
+    scale_color_viridis_d() +
+    theme_minimal() +
+    labs(title = "Station 50 September SPEI (12-month integration)"))
+
+
+
+
+# create annual spei values using September of a year and 12-month integration
+annual_spei <- met_spei %>% 
+  filter(month(date) == 9) %>% 
+  select(sta, year, spei_12)
+
+# write annual spei file to disk
+# write_csv(annual_spei, "data/processed_data/met_yearly_spei.csv")
 
 
 

@@ -500,33 +500,57 @@ met_annual_ppt_classified %>%
   theme_minimal())
 
 
-# saves previous graphs
-ggsave(filename = paste0("figures/met_cdd_annual_mean", ".jpg"),
-       plot = met_cdd_mean,
-       dpi = 300,
-       width = 10,
-       height = 4)
+# # saves previous graphs
+# ggsave(filename = paste0("figures/met_cdd_annual_mean", ".jpg"),
+#        plot = met_cdd_mean,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+# 
+# ggsave(filename = paste0("figures/met_cdd_extremes", ".jpg"),
+#        plot = met_extreme_cdds,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+# 
+# ggsave(filename = paste0("figures/met_ppt_events", ".jpg"),
+#        plot = met_ppt_events,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+# 
+# ggsave(filename = paste0("figures/met_extreme_ppt_events", ".jpg"),
+#        plot = met_extreme_ppt_events,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
 
-ggsave(filename = paste0("figures/met_cdd_extremes", ".jpg"),
-       plot = met_extreme_cdds,
-       dpi = 300,
-       width = 10,
-       height = 4)
-
-ggsave(filename = paste0("figures/met_ppt_events", ".jpg"),
-       plot = met_ppt_events,
-       dpi = 300,
-       width = 10,
-       height = 4)
-
-ggsave(filename = paste0("figures/met_extreme_ppt_events", ".jpg"),
-       plot = met_extreme_ppt_events,
-       dpi = 300,
-       width = 10,
-       height = 4)
 
 
+(met_extreme_cdd_length <- cdd %>% 
+    filter(is_extreme_cdd == TRUE) %>% 
+    ggplot(aes(x = start_date, y = cdd)) +
+    geom_point(size = 0.6) +
+    geom_smooth(method = "lm", se = FALSE, size = 0.5, color = "black") +
+    facet_wrap(~ sta) +
+    labs(x = "Date",
+         y = "Length (days)",
+         title = "Length of Extreme CDDs") +
+    scale_fill_viridis_d() +
+    theme_minimal())
 
+
+(met_extreme_ppt_size <- events %>% 
+    filter(is_extreme == TRUE) %>% 
+    ggplot(aes(x = date, y = ppt)) +
+    geom_point(size = 0.8) +
+    geom_smooth(method = "lm", se = FALSE, size = 0.5, color = "black") +
+    facet_wrap(~ sta) +
+    labs(x = "Date",
+         y = "Event Size (mm)",
+         title = "Extreme Precipitation Event Sizes") +
+    scale_fill_viridis_d() +
+    theme_minimal())
 
 
 
@@ -560,42 +584,108 @@ met_annual_ppt_classified %>%
   theme_minimal())
 
 
+# (met_ppt_year_type_ts <- met_annual_ppt_classified %>% 
+#   mutate(year_type_factor = factor(ifelse(year_type == "extreme_dry", 0,
+#                                           ifelse(year_type == "below_average", 1,
+#                                                  ifelse(year_type == "average", 2,
+#                                                         ifelse(year_type == "above_average", 3, 4)))))) %>%
+#   ggplot(aes(x = year, y = year_type_factor, shape = year_type)) +
+#   geom_point() +
+#   geom_line(size = 0.3) +
+#   facet_wrap(~ sta) +
+#   labs(x = "Period",
+#        y = "Count") +
+#   scale_color_viridis_d() +
+#   theme_minimal() +
+#   labs(title = "Precipitation Year Type"))
+
 (met_ppt_year_type_ts <- met_annual_ppt_classified %>% 
-  mutate(year_type_factor = factor(ifelse(year_type == "extreme_dry", 0,
-                                          ifelse(year_type == "below_average", 1,
-                                                 ifelse(year_type == "average", 2,
-                                                        ifelse(year_type == "above_average", 3, 4)))))) %>%
-  ggplot(aes(x = year, y = year_type_factor, color = year_type)) +
-  geom_point() +
-  geom_line(size = 0.3) +
+    mutate(year_type_factor = factor(year_type,
+                                     levels = c("extreme_dry", "below_average", "average", "above_average", "extreme_wet"),
+                                     labels = c("extreme_dry", "below_average", "average", "above_average", "extreme_wet"))) %>% 
+    ggplot(aes(x = year, y = year_type_factor, linetype = year_type_factor)) +
+    geom_point() +
+    geom_line(size = 0.6) +
+    facet_wrap(~ sta) +
+    labs(x = "Year",
+         y = "",
+         title = "Precipitation Year Type") +
+    scale_color_viridis_d() +
+    guides(linetype = guide_legend(title= "Year Type")) +
+    theme_minimal())
+
+
+
+# # saves previous graphs
+# ggsave(filename = paste0("figures/ppt_year_type_barplot", ".jpg"),
+#        plot = met_ppt_year_type_barplot,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+# 
+# 
+# ggsave(filename = paste0("figures/ppt_year_type_ts", ".jpg"),
+#        plot = met_ppt_year_type_ts,
+#        dpi = 300,
+#        width = 10,
+#        height = 4)
+
+
+
+
+
+
+# cv of MAP in 4 year bins ------------------------
+
+
+str(met_annual_ppt_classified)
+
+ppt_binned <- met_annual_ppt_classified %>% 
+  mutate(bin = cut_interval(year, length = 4))
+
+ppt_binned_summary <- ppt_binned %>% 
+  group_by(sta, bin) %>% 
+  summarize(ppt_mean = mean(ppt),
+            ppt_sd   = sd(ppt),
+            ppt_cov  = ppt_sd / ppt_mean) %>% 
+  ungroup()
+
+str(ppt_binned_summary)
+
+ppt_binned_summary <- ppt_binned_summary %>% 
+  mutate(bin_char = as.character(bin)) %>% 
+  mutate(bin_char = gsub("\\[", "", bin_char)) %>% 
+  mutate(bin_char = gsub("\\(", "", bin_char)) %>% 
+  mutate(bin_char = gsub("\\]", "", bin_char)) %>% 
+  mutate(bin_char = gsub("\\)", "", bin_char)) %>% 
+  separate(., bin_char, sep = ',', into = c("date_start", "date_end"), remove = FALSE)
+
+
+ggplot(ppt_binned_summary, aes(x = date_end, y = ppt_cov, group = sta)) +
+  geom_line() + 
   facet_wrap(~ sta) +
-  labs(x = "Period",
-       y = "Count") +
-  scale_color_viridis_d() +
   theme_minimal() +
-  labs(title = "Precipitation Year Type"))
+  labs(title = "Coefficient of Variation in Precipitation",
+       subtitle = "4-year bins",
+       x = "Year",
+       y = "CV")
 
 
+(ppt_cv_graph <- ggplot(ppt_binned_summary, aes(x = date_end, y = ppt_cov, group = sta)) +
+  geom_bar(stat = "identity") + 
+  facet_wrap(~ sta) +
+  theme_minimal() +
+  labs(title = "Coefficient of Variation in Precipitation",
+       subtitle = "4-year bins",
+       x = "Year",
+       y = "CV"))
 
-# saves previous graphs
-ggsave(filename = paste0("figures/ppt_year_type_barplot", ".jpg"),
-       plot = met_ppt_year_type_barplot,
+
+ggsave(filename = paste0("figures/ppt_cv", ".jpg"),
+       plot = ppt_cv_graph,
        dpi = 300,
        width = 10,
        height = 4)
-
-
-ggsave(filename = paste0("figures/ppt_year_type_ts", ".jpg"),
-       plot = met_ppt_year_type_ts,
-       dpi = 300,
-       width = 10,
-       height = 4)
-
-
-
-
-
-
 
 
 

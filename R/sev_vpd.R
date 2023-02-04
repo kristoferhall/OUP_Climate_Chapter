@@ -121,6 +121,10 @@ met_y_vpd %>%
        y = "VPD (kPa)") +
   theme_minimal()
 
+str(met_y_vpd)
+
+# write annual vpd to file
+# write_csv(met_y_vpd, "data/processed_data/met_yearly_vpd.csv")
 
 
 # by month of year -----------------------------
@@ -178,6 +182,31 @@ ggsave(filename = paste0("figures/m50_bymonth_vpd", ".jpg"),
        dpi = 300,
        width = 10,
        height = 4)
+
+
+# monthly model
+met_m_vpd_4m <- met_m_vpd %>% 
+  mutate(year = year(month_date),
+         time = as.numeric(as.factor(year)),
+         month = as.character(month))
+
+glimpse(met_m_vpd_4m)
+met_m_vpd_40 <- met_m_vpd_4m %>% 
+  filter(sta == "40")
+
+vpd40_month_model <- gls(model = vpd ~ time*month,
+    data = met_m_vpd_40,
+    method = "ML",
+    na.action = na.omit)
+
+summary(vpd40_month_model)
+
+library(car)
+anova(vpd40_month_model)
+
+Anova(vpd40_month_model, type=2)
+
+
 
 
 

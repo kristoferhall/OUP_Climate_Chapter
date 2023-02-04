@@ -12,12 +12,14 @@ library(lubridate)
 
 path_to_files <- "./data/processed_data/"
 
-
+# only look at data for 1990 on
+min_year <- 1990
 
 # yearly data ------------------------------------------------
 
 y <- read_csv(paste0(path_to_files, "met_yearly_gap_filled.csv")) %>% 
-  mutate(sta = as.factor(sta))
+  mutate(sta = as.factor(sta)) %>% 
+  filter(year >= min_year)
 
 summary(y)
 
@@ -193,7 +195,8 @@ y_met_vars_by_sta(y, "50")
 # monthly data -------------------------------------------------------
 
 m <- read_csv(paste0(path_to_files, "met_monthly_gap_filled.csv")) %>% 
-  mutate(sta = as.factor(sta))
+  mutate(sta = as.factor(sta)) %>% 
+  filter(year >= min_year)
 
 summary(m)
 
@@ -519,7 +522,8 @@ by_month_lm(m, ppt, "50", "Station 50 Monthly Precipitation (mm)")
 
 # daily data ----------------------------------------------------
 d <- read_csv(paste0(path_to_files, "met_daily_gap_filled.csv")) %>% 
-  mutate(sta = as.factor(sta))
+  mutate(sta = as.factor(sta)) %>% 
+  filter(year(date) >= min_year)
 
 summary(d)
 
@@ -572,8 +576,10 @@ ggplot(d, aes(x = date, y = ppt, color = sta)) +
 
 d_monsoon <- d %>% 
   mutate(DOY = yday(date)) %>% 
+  filter(year(date) >= min_year) %>% 
   filter(DOY >= 181 & DOY <= 273)
 
+summary(d_monsoon)
 
 # to aid in plotting monsoon data, taking the daily data, summarizing
 # it by year, and then plotting
