@@ -18,10 +18,13 @@ library(emmeans)
 
 path_to_files <- "./data/processed_data/"
 
+min_year <- 1990
+
 # load and only keep vars of interest
 y <- read_csv(paste0(path_to_files, "met_yearly_gap_filled.csv")) %>% 
   mutate(sta = as.factor(sta)) %>% 
-  select(sta:ppt)
+  select(sta:ppt) %>% 
+  filter(year >= 1990)
 
 str(y)
 summary(y)
@@ -47,6 +50,7 @@ m50 <- prepare_data_for_nlme(y, "50")
 
 mall <- rbind(m40, m42, m49, m50)
 
+str(mall)
 
 # function for plotting preliminary yearly graph -----------------------------------------------------------
 
@@ -78,7 +82,8 @@ plot_yearly_results <- function(data, var, coeffs, title, y_axis_label) {
     labs(title = title,
          x = "Year",
          y = y_axis_label,
-         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", round(coeffs[2,2], 4), ")"))
+         caption = paste("slope = ", round(coeffs[2,1], 3), "\n(p-value = ", round(coeffs[2,2], 4), ")")) +
+    theme_minimal()
 }
 
 
