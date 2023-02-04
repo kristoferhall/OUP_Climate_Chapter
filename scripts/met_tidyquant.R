@@ -9,12 +9,14 @@ library(tidyquant)
 
 path_to_files <- "./data/processed_data/"
 
+min_year <- 1990
 
 
 # Yearly Data ----  
 
 y <- read_csv(paste0(path_to_files, "met_yearly_gap_filled.csv")) %>% 
-  mutate(sta = as.factor(sta))
+  mutate(sta = as.factor(sta)) %>% 
+  filter(year >= min_year)
 
 summary(y)
 
@@ -43,7 +45,8 @@ y %>%
 
 # might be more interesting with monthly data ----
 m <- read_csv(paste0(path_to_files, "met_monthly_gap_filled.csv")) %>% 
-  mutate(sta = as.factor(sta))
+  mutate(sta = as.factor(sta)) %>% 
+  filter(year >= min_year)
 
 summary(m)
 
@@ -62,8 +65,6 @@ m %>%
   geom_ma(ma_fun = SMA, n = 8, linetype = 5) +
   geom_ma(ma_fun = SMA, n = 36, color = "aquamarine") +
   geom_bbands(ma_fun = SMA, sd = 2, n = 20)
-
-
 
 
 
