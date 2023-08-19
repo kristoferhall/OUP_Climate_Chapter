@@ -1,3 +1,13 @@
+# This script produces a table for the chapter providing basic info about each station.
+# The chapter text contians more descriptive info about each station.
+#
+# KMH
+#
+#
+# 
+# The script was used to create the 'met_station_info_table.png' in the figures folder.
+
+
 library(tidyverse)
 library(gt)
 
